@@ -574,6 +574,14 @@ select {
     align-items: start;
 }
 
+.split-layout > * {
+    min-width: 0;
+}
+
+.split-layout .table-card {
+    overflow-x: auto;
+}
+
 .table-card table {
     width: 100%;
     border-collapse: collapse;
