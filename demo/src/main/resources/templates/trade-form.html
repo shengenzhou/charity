@@ -2,53 +2,111 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Trade</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css" />
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-shell">
+    <div th:replace="~{fragments/navbar :: navbar('markets')}"></div>
 
-<h1>Place Trade</h1>
+    <main class="page">
+        <section class="hero">
+            <div class="hero-panel">
+                <span class="eyebrow">Trade ticket</span>
+                <h1 class="trade-ticket-title">Place Trade</h1>
+                <p class="hero-copy" th:text="${market.question}">Will it rain?</p>
+                <div class="ticket-tags">
+                    <span class="ticket-tag" th:text="'Outcome: ' + ${selectedOutcome}">Outcome: YES</span>
+                    <span class="ticket-tag" th:text="'Side: ' + ${selectedSide}">Side: BUY</span>
+                    <span class="ticket-tag" th:text="'Price: ' + ${currentPrice}">Price: 0.42</span>
+                </div>
+                <div class="trade-kpis">
+                    <div class="ticket-stat">
+                        <div class="tiny">Selected charity</div>
+                        <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None selected'}">Red Cross</strong>
+                    </div>
+                    <div class="ticket-stat">
+                        <div class="tiny">Fee rate</div>
+                        <strong class="mono" th:text="${feeRate}">0.02</strong>
+                    </div>
+                </div>
+            </div>
 
-<div th:if="${errorMessage}" style="color: red;" th:text="${errorMessage}"></div>
+            <aside class="impact-panel">
+                <span class="eyebrow" style="background: var(--charity-light); color: var(--primary);">Ticket preview</span>
+                <p class="impact-amount" th:text="${currentPrice}">0.42</p>
+                <p class="muted">This ticket uses the current stored market price. Large-order price movement simulation is still a future step.</p>
+                <div class="impact-grid">
+                    <div class="impact-card">
+                        <div class="tiny">Trader balance</div>
+                        <div class="mono" th:text="${currentUser.balance}">1000.00</div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="tiny">Fee recipient</div>
+                        <div th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'Choose a charity'}">Red Cross</div>
+                    </div>
+                </div>
+            </aside>
+        </section>
 
-<p>
-    <strong>Market:</strong>
-    <span th:text="${market.question}">Will it rain?</span>
-</p>
+        <div class="trade-layout">
+            <section class="trade-panel">
+                <div class="flash-stack">
+                    <div class="flash error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+                </div>
 
-<p>
-    <strong>Outcome:</strong>
-    <span th:text="${selectedOutcome}">YES</span>
-</p>
+                <form class="trade-form" th:action="@{/trades}" th:object="${tradeRequest}" method="post">
+                    <input type="hidden" th:field="*{userId}" />
+                    <input type="hidden" th:field="*{marketId}" />
+                    <input type="hidden" th:field="*{outcome}" />
+                    <input type="hidden" th:field="*{side}" />
 
-<p>
-    <strong>Side:</strong>
-    <span th:text="${selectedSide}">BUY</span>
-</p>
+                    <div class="field">
+                        <label for="quantity">Quantity</label>
+                        <input id="quantity" type="number" step="0.01" min="0.01" th:field="*{quantity}" placeholder="Enter share quantity" required />
+                        <div class="help-text">Trade value is quantity multiplied by the current stored price.</div>
+                        <div class="field-error" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}"></div>
+                    </div>
 
-<p>
-    <strong>Current price:</strong>
-    <span th:text="${currentPrice}">0.42</span>
-</p>
+                    <div class="form-actions">
+                        <button class="btn" type="submit">Submit trade</button>
+                        <a class="btn-ghost" th:href="@{/markets}">Cancel</a>
+                    </div>
+                </form>
+            </section>
 
-<p>
-    <strong>Selected charity:</strong>
-    <span th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None'}">Red Cross</span>
-</p>
-
-<form th:action="@{/trades}" th:object="${tradeRequest}" method="post">
-    <input type="hidden" th:field="*{userId}" />
-    <input type="hidden" th:field="*{marketId}" />
-    <input type="hidden" th:field="*{outcome}" />
-    <input type="hidden" th:field="*{side}" />
-
-    <label for="quantity">Quantity</label>
-    <input id="quantity" type="number" step="0.01" min="0.01" th:field="*{quantity}" required />
-    <div th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}" style="color:red;"></div>
-
-    <br><br>
-
-    <button type="submit">Submit Trade</button>
-    <a th:href="@{/markets}">Cancel</a>
-</form>
+            <aside class="trade-panel">
+                <h2 class="section-title">Order summary</h2>
+                <div class="trade-summary-grid">
+                    <div class="trade-summary-card">
+                        <div class="summary-line">
+                            <span>Market</span>
+                            <strong th:text="${market.id}">1</strong>
+                        </div>
+                        <div class="summary-line">
+                            <span>Outcome</span>
+                            <strong th:text="${selectedOutcome}">YES</strong>
+                        </div>
+                        <div class="summary-line">
+                            <span>Side</span>
+                            <strong th:text="${selectedSide}">BUY</strong>
+                        </div>
+                        <div class="summary-line">
+                            <span>Current price</span>
+                            <strong class="mono" th:text="${currentPrice}">0.42</strong>
+                        </div>
+                        <div class="summary-line">
+                            <span>Fee rate</span>
+                            <strong class="mono" th:text="${feeRate}">0.02</strong>
+                        </div>
+                    </div>
+                    <div class="trade-summary-card">
+                        <div class="tiny">Routing note</div>
+                        <p class="muted">Every executed trade donates its fee directly to your currently selected charity.</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+</div>
 </body>
 </html>

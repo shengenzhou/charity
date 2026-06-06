@@ -183,6 +183,10 @@ public class TradeService {
         return value.setScale(2, RoundingMode.HALF_UP);
     }
 
+    public BigDecimal getFeeRate() {
+        return FEE_RATE;
+    }
+
     public TradeResponse toTradeResponse(Trade trade) {
         return TradeResponse.builder()
                 .id(trade.getId())

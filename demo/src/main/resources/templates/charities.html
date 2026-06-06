@@ -2,45 +2,85 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Charities</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css" />
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-shell">
+    <div th:replace="~{fragments/navbar :: navbar('charities')}"></div>
 
-<h1>Charities</h1>
+    <main class="page">
+        <section class="hero">
+            <div class="hero-panel">
+                <span class="eyebrow">Cause selection</span>
+                <h1 class="hero-title">Charities</h1>
+                <p class="hero-copy">
+                    Pick where your trading fees go. These cards use live charity records and donation totals from the backend.
+                </p>
+                <div class="hero-metrics">
+                    <div class="hero-metric">
+                        <span>Current charity</span>
+                        <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None'}">Red Cross</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Available causes</span>
+                        <strong th:text="${#lists.size(charities)}">4</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Trader</span>
+                        <strong th:text="${currentUser.name}">Alice</strong>
+                    </div>
+                </div>
+            </div>
 
-<div th:if="${successMessage}" style="color: green;" th:text="${successMessage}"></div>
-<div th:if="${errorMessage}" style="color: red;" th:text="${errorMessage}"></div>
+            <aside class="impact-panel">
+                <span class="eyebrow" style="background: var(--charity-light); color: var(--primary);">Donation routing</span>
+                <p class="impact-amount" th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.totalDonationsReceived : 0}">0.00</p>
+                <p class="muted">Total received by your currently selected charity.</p>
+            </aside>
+        </section>
 
-<p>
-    Current selected charity:
-    <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None'}">Red Cross</strong>
-</p>
+        <div class="flash-stack">
+            <div class="flash success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="flash error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+        </div>
 
-<table border="1" cellpadding="8" cellspacing="0">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Total Donations Received</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="charity : ${charities}">
-        <td th:text="${charity.name}">Red Cross</td>
-        <td th:text="${charity.description}">Humanitarian aid</td>
-        <td th:text="${charity.totalDonationsReceived}">0.00</td>
-        <td>
-            <form th:action="@{/charities/select}" method="post">
-                <input type="hidden" name="charityId" th:value="${charity.id}" />
-                <button type="submit"
-                        th:disabled="${currentUser.selectedCharity != null && currentUser.selectedCharity.id == charity.id}">
-                    Select
-                </button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+        <section>
+            <div class="section-head">
+                <div>
+                    <h2 class="section-title">Partner causes</h2>
+                    <p class="section-copy">Selection is real. Visual treatment is the first Figma-inspired pass.</p>
+                </div>
+            </div>
+
+            <div class="charity-grid">
+                <article class="charity-card"
+                         th:each="charity : ${charities}"
+                         th:classappend="${currentUser.selectedCharity != null && currentUser.selectedCharity.id == charity.id} ? ' current'">
+                    <div class="charity-icon">❤</div>
+                    <h3 class="charity-name" th:text="${charity.name}">Red Cross</h3>
+                    <p class="charity-description muted" th:text="${charity.description}">Humanitarian aid</p>
+                    <div class="charity-card-footer">
+                        <div>
+                            <div class="tiny">Donations received</div>
+                            <div class="mono" th:text="${charity.totalDonationsReceived}">0.00</div>
+                        </div>
+                        <div th:if="${currentUser.selectedCharity != null && currentUser.selectedCharity.id == charity.id}" class="market-chip">
+                            <span class="status-dot"></span>
+                            Currently selected
+                        </div>
+                    </div>
+                    <form th:action="@{/charities/select}" method="post" style="margin-top: 1rem;">
+                        <input type="hidden" name="charityId" th:value="${charity.id}" />
+                        <button class="btn"
+                                type="submit"
+                                th:disabled="${currentUser.selectedCharity != null && currentUser.selectedCharity.id == charity.id}">
+                            <span th:text="${currentUser.selectedCharity != null && currentUser.selectedCharity.id == charity.id ? 'Selected' : 'Select charity'}">Select charity</span>
+                        </button>
+                    </form>
+                </article>
+            </div>
+        </section>
+    </main>
+</div>
 </body>
 </html>

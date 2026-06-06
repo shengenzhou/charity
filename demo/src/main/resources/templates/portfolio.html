@@ -2,91 +2,185 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Portfolio</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css" />
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-shell">
+    <div th:replace="~{fragments/navbar :: navbar('portfolio')}"></div>
 
-<h1>Portfolio</h1>
+    <main class="page">
+        <section class="hero">
+            <div class="hero-panel">
+                <span class="eyebrow">Performance dashboard</span>
+                <h1 class="hero-title">Portfolio</h1>
+                <p class="hero-copy">
+                    Track open positions, realized results, and the charitable effect of your trades from one dashboard.
+                </p>
+                <div class="hero-metrics">
+                    <div class="hero-metric">
+                        <span>Trader</span>
+                        <strong th:text="${portfolio.userName}">Alice</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Open positions</span>
+                        <strong th:text="${#lists.size(portfolio.positions)}">0</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Charity</span>
+                        <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None'}">Red Cross</strong>
+                    </div>
+                </div>
+            </div>
 
-<div th:if="${successMessage}" style="color: green;" th:text="${successMessage}"></div>
-<div th:if="${errorMessage}" style="color: red;" th:text="${errorMessage}"></div>
+            <aside class="impact-panel">
+                <span class="eyebrow" style="background: var(--charity-light); color: var(--primary);">Your impact</span>
+                <p class="impact-amount" th:text="${portfolio.totalDonated}">0.00</p>
+                <p class="muted">Trade fees donated through your activity.</p>
+                <div class="impact-grid">
+                    <div class="impact-card">
+                        <div class="tiny">Cash balance</div>
+                        <div class="mono" th:text="${portfolio.balance}">1000.00</div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="tiny">Total PnL</div>
+                        <div class="mono" th:text="${portfolio.totalPnl}">0.00</div>
+                    </div>
+                </div>
+            </aside>
+        </section>
 
-<h2>Summary</h2>
+        <div class="flash-stack">
+            <div class="flash success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="flash error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+        </div>
 
-<p><strong>User:</strong> <span th:text="${portfolio.userName}">Alice</span></p>
-<p><strong>Cash balance:</strong> <span th:text="${portfolio.balance}">1000.00</span></p>
-<p><strong>Selected charity:</strong> <span th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None'}">Red Cross</span></p>
-<p><strong>Total donated:</strong> <span th:text="${portfolio.totalDonated}">0.00</span></p>
-<p><strong>Total realized PnL:</strong> <span th:text="${portfolio.totalRealizedPnl}">0.00</span></p>
-<p><strong>Total unrealized PnL:</strong> <span th:text="${portfolio.totalUnrealizedPnl}">0.00</span></p>
-<p><strong>Total PnL:</strong> <span th:text="${portfolio.totalPnl}">0.00</span></p>
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-label">Cash balance</div>
+                <div class="stat-value" th:text="${portfolio.balance}">1000.00</div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-label">Realized PnL</div>
+                <div class="stat-value"
+                     th:classappend="${portfolio.totalRealizedPnl.signum() >= 0} ? ' positive' : ' negative'"
+                     th:text="${portfolio.totalRealizedPnl}">0.00</div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-label">Unrealized PnL</div>
+                <div class="stat-value"
+                     th:classappend="${portfolio.totalUnrealizedPnl.signum() >= 0} ? ' positive' : ' negative'"
+                     th:text="${portfolio.totalUnrealizedPnl}">0.00</div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-label">Total donated</div>
+                <div class="stat-value positive" th:text="${portfolio.totalDonated}">0.00</div>
+            </article>
+        </section>
 
-<h2>Positions</h2>
+        <div class="split-layout">
+            <section class="table-card">
+                <div class="table-meta">
+                    <div>
+                        <h2 class="section-title">Open positions</h2>
+                        <p class="section-copy">Live position data from the existing portfolio service.</p>
+                    </div>
+                    <a class="btn-secondary" th:href="@{/markets}">Browse markets</a>
+                </div>
 
-<table border="1" cellpadding="8" cellspacing="0">
-    <thead>
-    <tr>
-        <th>Market</th>
-        <th>Outcome</th>
-        <th>Quantity</th>
-        <th>Average Entry</th>
-        <th>Current Price</th>
-        <th>Realized PnL</th>
-        <th>Unrealized PnL</th>
-        <th>Total PnL</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:if="${#lists.isEmpty(portfolio.positions)}">
-        <td colspan="8">No open positions yet.</td>
-    </tr>
-    <tr th:each="position : ${portfolio.positions}">
-        <td th:text="${position.marketQuestion}">Will it rain?</td>
-        <td th:text="${position.outcome}">YES</td>
-        <td th:text="${position.quantity}">10</td>
-        <td th:text="${position.averageEntryPrice}">0.42</td>
-        <td th:text="${position.currentPrice}">0.42</td>
-        <td th:text="${position.realizedPnl}">0.00</td>
-        <td th:text="${position.unrealizedPnl}">0.00</td>
-        <td th:text="${position.totalPnl}">0.00</td>
-    </tr>
-    </tbody>
-</table>
+                <div th:if="${#lists.isEmpty(portfolio.positions)}" class="empty-state">
+                    No open positions yet.
+                </div>
 
-<h2>Trade History</h2>
+                <table th:if="${!#lists.isEmpty(portfolio.positions)}">
+                    <thead>
+                    <tr>
+                        <th>Market</th>
+                        <th>Outcome</th>
+                        <th>Quantity</th>
+                        <th>Average Entry</th>
+                        <th>Current Price</th>
+                        <th>Realized PnL</th>
+                        <th>Unrealized PnL</th>
+                        <th>Total PnL</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="position : ${portfolio.positions}">
+                        <td th:text="${position.marketQuestion}">Will it rain?</td>
+                        <td th:text="${position.outcome}">YES</td>
+                        <td class="mono" th:text="${position.quantity}">10</td>
+                        <td class="mono" th:text="${position.averageEntryPrice}">0.42</td>
+                        <td class="mono" th:text="${position.currentPrice}">0.42</td>
+                        <td class="mono" th:text="${position.realizedPnl}">0.00</td>
+                        <td class="mono" th:text="${position.unrealizedPnl}">0.00</td>
+                        <td class="mono" th:text="${position.totalPnl}">0.00</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
 
-<table border="1" cellpadding="8" cellspacing="0">
-    <thead>
-    <tr>
-        <th>Date</th>
-        <th>Market</th>
-        <th>Side</th>
-        <th>Outcome</th>
-        <th>Quantity</th>
-        <th>Price</th>
-        <th>Trade Value</th>
-        <th>Fee</th>
-        <th>Charity</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:if="${#lists.isEmpty(trades)}">
-        <td colspan="9">No trades yet.</td>
-    </tr>
-    <tr th:each="trade : ${trades}">
-        <td th:text="${trade.createdAt}">2026-06-06T12:00</td>
-        <td th:text="${trade.market.question}">Will it rain?</td>
-        <td th:text="${trade.side}">BUY</td>
-        <td th:text="${trade.outcome}">YES</td>
-        <td th:text="${trade.quantity}">10</td>
-        <td th:text="${trade.price}">0.42</td>
-        <td th:text="${trade.tradeValue}">4.20</td>
-        <td th:text="${trade.fee}">0.08</td>
-        <td th:text="${trade.charity != null ? trade.charity.name : 'None'}">Red Cross</td>
-    </tr>
-    </tbody>
-</table>
+            <aside class="surface-card">
+                <h2 class="section-title">Charity routing</h2>
+                <p class="section-copy">Your fees currently flow to the charity below.</p>
+                <div class="trade-summary-card">
+                    <div class="summary-line">
+                        <span>Selected charity</span>
+                        <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None'}">Red Cross</strong>
+                    </div>
+                    <div class="summary-line">
+                        <span>Donated so far</span>
+                        <strong class="mono" th:text="${portfolio.totalDonated}">0.00</strong>
+                    </div>
+                    <div class="summary-line">
+                        <span>Trader</span>
+                        <strong th:text="${portfolio.userName}">Alice</strong>
+                    </div>
+                </div>
+            </aside>
+        </div>
 
-<p><a th:href="@{/markets}">Back to markets</a></p>
+        <section class="table-card" style="margin-top: 1.2rem;">
+            <div class="table-meta">
+                <div>
+                    <h2 class="section-title">Trade history</h2>
+                    <p class="section-copy">Executed orders recorded by the trading service.</p>
+                </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(trades)}" class="empty-state">
+                No trades yet.
+            </div>
+
+            <table th:if="${!#lists.isEmpty(trades)}">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Market</th>
+                    <th>Side</th>
+                    <th>Outcome</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Trade Value</th>
+                    <th>Fee</th>
+                    <th>Charity</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="trade : ${trades}">
+                    <td th:text="${trade.createdAt}">2026-06-06T12:00</td>
+                    <td th:text="${trade.market.question}">Will it rain?</td>
+                    <td th:text="${trade.side}">BUY</td>
+                    <td th:text="${trade.outcome}">YES</td>
+                    <td class="mono" th:text="${trade.quantity}">10</td>
+                    <td class="mono" th:text="${trade.price}">0.42</td>
+                    <td class="mono" th:text="${trade.tradeValue}">4.20</td>
+                    <td class="mono" th:text="${trade.fee}">0.08</td>
+                    <td th:text="${trade.charity != null ? trade.charity.name : 'None'}">Red Cross</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
 </body>
 </html>

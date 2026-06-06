@@ -2,44 +2,112 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Markets</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css" />
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-shell">
+    <div th:replace="~{fragments/navbar :: navbar('markets')}"></div>
 
-<h1>Markets</h1>
+    <main class="page">
+        <section class="hero">
+            <div class="hero-panel">
+                <span class="eyebrow">Live prediction market</span>
+                <h1 class="hero-title">Markets</h1>
+                <p class="hero-copy">
+                    Trade clear YES and NO outcomes while routing every fee toward your selected charity.
+                    This screen now follows the Figma direction, but it still runs on the existing Spring data.
+                </p>
+                <div class="hero-metrics">
+                    <div class="hero-metric">
+                        <span>Open markets</span>
+                        <strong th:text="${#lists.size(markets)}">3</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Current trader</span>
+                        <strong th:text="${currentUser.name}">Alice</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Selected cause</span>
+                        <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'Choose one'}">Red Cross</strong>
+                    </div>
+                </div>
+            </div>
 
-<div th:if="${successMessage}" style="color: green;" th:text="${successMessage}"></div>
-<div th:if="${errorMessage}" style="color: red;" th:text="${errorMessage}"></div>
+            <aside class="impact-panel">
+                <span class="eyebrow" style="background: var(--charity-light); color: var(--primary);">Charity impact</span>
+                <p class="impact-amount" th:text="${currentUser.balance}">1000.00</p>
+                <p class="muted">Available balance ready for your next prediction.</p>
+                <div class="impact-grid">
+                    <div class="impact-card">
+                        <div class="tiny">Platform fee</div>
+                        <div class="mono">2%</div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="tiny">Donation route</div>
+                        <div th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'Not selected'}">Red Cross</div>
+                    </div>
+                </div>
+            </aside>
+        </section>
 
-<table border="1" cellpadding="8" cellspacing="0">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Question</th>
-        <th>YES Price</th>
-        <th>NO Price</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="market : ${markets}">
-        <td th:text="${market.id}">1</td>
-        <td th:text="${market.question}">Will it rain?</td>
-        <td th:text="${market.yesPrice}">0.42</td>
-        <td th:text="${market.noPrice}">0.58</td>
-        <td th:text="${market.status}">OPEN</td>
-        <td>
-            <a th:href="@{/trades/new(marketId=${market.id}, outcome='YES', side='BUY')}">Buy YES</a>
-            |
-            <a th:href="@{/trades/new(marketId=${market.id}, outcome='NO', side='BUY')}">Buy NO</a>
-            |
-            <a th:href="@{/trades/new(marketId=${market.id}, outcome='YES', side='SELL')}">Sell YES</a>
-            |
-            <a th:href="@{/trades/new(marketId=${market.id}, outcome='NO', side='SELL')}">Sell NO</a>
-        </td>
-    </tr>
-    </tbody>
-</table>
+        <div class="flash-stack">
+            <div class="flash success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="flash error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+        </div>
+
+        <section>
+            <div class="section-head">
+                <div>
+                    <h2 class="section-title">Featured markets</h2>
+                    <p class="section-copy">Dynamic pricing and market status are live. Trend and volume chips are visual placeholders from the Figma plan.</p>
+                </div>
+                <div class="filter-pills">
+                    <span class="pill active">All markets</span>
+                    <span class="pill">Trending</span>
+                    <span class="pill">Closing soon</span>
+                </div>
+            </div>
+
+            <div class="market-grid">
+                <article class="market-card" th:each="market, iter : ${markets}">
+                    <div class="market-top">
+                        <div class="market-chips">
+                            <span class="market-chip">Market #[[${market.id}]]</span>
+                            <span class="market-chip" th:text="${iter.index % 2 == 0 ? 'Trending now' : 'Community pick'}">Trending now</span>
+                        </div>
+                        <span class="market-status"
+                              th:classappend="${#strings.toLowerCase(market.status.name())}"
+                              th:text="${market.status}">OPEN</span>
+                    </div>
+
+                    <h3 class="market-question" th:text="${market.question}">Will it rain?</h3>
+
+                    <div class="market-bottom">
+                        <div class="tiny">Category: General</div>
+                        <div class="tiny" th:text="${iter.index % 2 == 0 ? 'Volume preview: 1.4k shares' : 'Volume preview: 860 shares'}">Volume preview: 1.4k shares</div>
+                    </div>
+
+                    <div class="price-grid">
+                        <div class="price-card yes">
+                            <span class="price-label">Yes price</span>
+                            <strong class="price-number" th:text="${market.yesPrice}">0.42</strong>
+                        </div>
+                        <div class="price-card no">
+                            <span class="price-label">No price</span>
+                            <strong class="price-number" th:text="${market.noPrice}">0.58</strong>
+                        </div>
+                    </div>
+
+                    <div class="price-actions">
+                        <a class="btn buy-yes" th:href="@{/trades/new(marketId=${market.id}, outcome='YES', side='BUY')}">Buy YES</a>
+                        <a class="btn buy-no" th:href="@{/trades/new(marketId=${market.id}, outcome='NO', side='BUY')}">Buy NO</a>
+                        <a class="action-link" th:href="@{/trades/new(marketId=${market.id}, outcome='YES', side='SELL')}">Sell YES</a>
+                        <a class="action-link" th:href="@{/trades/new(marketId=${market.id}, outcome='NO', side='SELL')}">Sell NO</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+</div>
 </body>
 </html>

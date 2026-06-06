@@ -92,6 +92,7 @@ public class WebTradeController {
         model.addAttribute(
                 "currentPrice",
                 tradeRequest.getOutcome() == Outcome.YES ? market.getYesPrice() : market.getNoPrice());
+        model.addAttribute("feeRate", tradeService.getFeeRate());
         if (errorMessage != null) {
             model.addAttribute("errorMessage", errorMessage);
         }

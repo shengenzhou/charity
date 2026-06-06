@@ -1,39 +1,54 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<nav th:fragment="navbar" style="padding: 12px; border-bottom: 1px solid #ddd; margin-bottom: 24px;">
-    <a th:href="@{/markets}">Markets</a>
-    |
-    <a th:href="@{/portfolio}">Portfolio</a>
-    |
-    <a th:href="@{/charities}">Charities</a>
+<th:block th:fragment="navbar(activePage)">
+    <div class="top-ribbon">
+        <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'Choose a charity'}">Red Cross</strong>
+        receives every trade fee you generate.
+    </div>
+    <div class="app-nav-wrap">
+        <nav class="app-nav">
+            <a class="brand" th:href="@{/markets}">
+                <span class="brand-mark">PX</span>
+                <span class="brand-copy">
+                    <strong>PredictX Charity Market</strong>
+                    <span>Prediction markets with built-in giving</span>
+                </span>
+            </a>
 
-    <span style="margin-left: 24px;">
-        Current user:
-        <strong th:text="${currentUser.name}">Alice</strong>
-    </span>
+            <div class="nav-links">
+                <a class="nav-link" th:classappend="${activePage == 'markets'} ? ' active'" th:href="@{/markets}">Markets</a>
+                <a class="nav-link" th:classappend="${activePage == 'portfolio'} ? ' active'" th:href="@{/portfolio}">Portfolio</a>
+                <a class="nav-link" th:classappend="${activePage == 'charities'} ? ' active'" th:href="@{/charities}">Charities</a>
+            </div>
 
-    <span style="margin-left: 12px;">
-        Balance:
-        <strong th:text="${currentUser.balance}">1000.00</strong>
-    </span>
-
-    <span style="margin-left: 12px;">
-        Charity:
-        <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None'}">Red Cross</strong>
-    </span>
-
-    <form th:action="@{/users/switch}" method="post" style="display: inline; margin-left: 24px;">
-        <select name="userId">
-            <option th:each="user : ${users}"
-                    th:value="${user.id}"
-                    th:text="${user.name}"
-                    th:selected="${user.id == currentUser.id}">
-                Alice
-            </option>
-        </select>
-        <button type="submit">Switch</button>
-    </form>
-</nav>
+            <div class="nav-meta">
+                <span class="nav-chip">
+                    <span class="chip-label">User</span>
+                    <strong th:text="${currentUser.name}">Alice</strong>
+                </span>
+                <span class="balance-chip">
+                    <span class="chip-label">Balance</span>
+                    <strong th:text="${currentUser.balance}">1000.00</strong>
+                </span>
+                <span class="charity-chip">
+                    <span class="chip-label">Charity</span>
+                    <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None selected'}">Red Cross</strong>
+                </span>
+                <form class="user-switch-form" th:action="@{/users/switch}" method="post">
+                    <select name="userId" aria-label="Switch user">
+                        <option th:each="user : ${users}"
+                                th:value="${user.id}"
+                                th:text="${user.name}"
+                                th:selected="${user.id == currentUser.id}">
+                            Alice
+                        </option>
+                    </select>
+                    <button class="btn-secondary" type="submit">Switch</button>
+                </form>
+            </div>
+        </nav>
+    </div>
+</th:block>
 </body>
 </html>
