@@ -1,5 +1,6 @@
 package com.example.charitymarket.service;
 
+import com.example.charitymarket.dto.SimulationState;
 import com.example.charitymarket.exception.BadRequestException;
 import com.example.charitymarket.model.Charity;
 import com.example.charitymarket.model.Market;
@@ -7,7 +8,6 @@ import com.example.charitymarket.model.MarketPriceSnapshot;
 import com.example.charitymarket.model.MarketStatus;
 import com.example.charitymarket.model.Outcome;
 import com.example.charitymarket.model.Position;
-import com.example.charitymarket.model.SimulationState;
 import com.example.charitymarket.model.User;
 import com.example.charitymarket.repository.CharityDonationRepository;
 import com.example.charitymarket.repository.CharityRepository;
@@ -55,7 +55,7 @@ public class SimulationService {
     private final CharityRepository charityRepository;
 
     public void initializeSimulation() {
-        getOrCreateState();
+        getOrCreateSimulationStateEntity();
 
         List<Market> markets = marketRepository.findAll().stream()
                 .sorted(Comparator.comparing(Market::getId))
@@ -70,7 +70,16 @@ public class SimulationService {
     }
 
     public Integer getCurrentGlobalTimestamp() {
-        return getOrCreateState().getCurrentTimestamp();
+        return getOrCreateSimulationStateEntity().getCurrentTimestamp();
+    }
+
+    public SimulationState getSimulationState() {
+        com.example.charitymarket.model.SimulationState state = getOrCreateSimulationStateEntity();
+        return SimulationState.builder()
+                .currentTimestamp(state.getCurrentTimestamp())
+                .expiryTimestamp(MAX_TIMESTAMP)
+                .resolved(state.getCurrentTimestamp() >= MAX_TIMESTAMP)
+                .build();
     }
 
     public void generateSnapshotsForAllMarkets() {
@@ -109,7 +118,7 @@ public class SimulationService {
     public void setGlobalTimestamp(Integer timestampIndex) {
         validateTimestamp(timestampIndex);
 
-        SimulationState state = getOrCreateState();
+        com.example.charitymarket.model.SimulationState state = getOrCreateSimulationStateEntity();
         if (timestampIndex < state.getCurrentTimestamp()) {
             throw new BadRequestException("Cannot move simulation backwards. Reset first.");
         }
@@ -216,7 +225,7 @@ public class SimulationService {
         marketPriceSnapshotRepository.deleteAllInBatch();
         generateSnapshotsForAllMarkets();
 
-        SimulationState state = getOrCreateState();
+        com.example.charitymarket.model.SimulationState state = getOrCreateSimulationStateEntity();
         state.setCurrentTimestamp(MIN_TIMESTAMP);
         simulationStateRepository.save(state);
     }
@@ -227,9 +236,9 @@ public class SimulationService {
         }
     }
 
-    private SimulationState getOrCreateState() {
+    private com.example.charitymarket.model.SimulationState getOrCreateSimulationStateEntity() {
         return simulationStateRepository.findById(STATE_ID)
-                .orElseGet(() -> simulationStateRepository.save(SimulationState.builder()
+                .orElseGet(() -> simulationStateRepository.save(com.example.charitymarket.model.SimulationState.builder()
                         .id(STATE_ID)
                         .currentTimestamp(MIN_TIMESTAMP)
                         .build()));

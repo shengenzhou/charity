@@ -8,6 +8,7 @@ import com.example.charitymarket.repository.UserRepository;
 import com.example.charitymarket.service.CurrentUserService;
 import com.example.charitymarket.service.SimulationService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Comparator;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -50,21 +51,42 @@ public class WebSimulationController {
     }
 
     @PostMapping("/timestamp")
-    public String setTimestamp(@RequestParam Integer timestampIndex, RedirectAttributes redirectAttributes) {
+    public String setTimestamp(
+            @RequestParam Integer timestampIndex,
+            HttpServletRequest request,
+            RedirectAttributes redirectAttributes) {
         try {
             simulationService.setGlobalTimestamp(timestampIndex);
             redirectAttributes.addFlashAttribute("successMessage", "Simulation moved to timestamp " + timestampIndex + ".");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
-        return "redirect:/simulation";
+        return "redirect:" + resolveRedirectTarget(request);
     }
 
     @PostMapping("/reset")
-    public String resetSimulation(RedirectAttributes redirectAttributes) {
+    public String resetSimulation(HttpServletRequest request, RedirectAttributes redirectAttributes) {
         simulationService.resetSimulation();
         redirectAttributes.addFlashAttribute("successMessage", "Simulation reset.");
-        return "redirect:/simulation";
+        return "redirect:" + resolveRedirectTarget(request);
+    }
+
+    private String resolveRedirectTarget(HttpServletRequest request) {
+        String referer = request.getHeader("Referer");
+        if (referer == null || referer.isBlank()) {
+            return "/simulation";
+        }
+
+        String contextPath = request.getContextPath();
+        int schemeSeparator = referer.indexOf("://");
+        if (schemeSeparator >= 0) {
+            int pathStart = referer.indexOf('/', schemeSeparator + 3);
+            if (pathStart >= 0) {
+                String path = referer.substring(pathStart);
+                return path.startsWith(contextPath) ? path.substring(contextPath.length()) : path;
+            }
+        }
+        return referer;
     }
 
     @Getter
