@@ -1,6 +1,7 @@
 package com.example.charitymarket.config;
 
 import com.example.charitymarket.dto.SimulationState;
+import com.example.charitymarket.service.CurrentUserService;
 import com.example.charitymarket.service.SimulationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,9 +12,15 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class GlobalModelAttributes {
 
     private final SimulationService simulationService;
+    private final CurrentUserService currentUserService;
 
     @ModelAttribute("simulationState")
     public SimulationState simulationState() {
         return simulationService.getSimulationState();
+    }
+
+    @ModelAttribute("demoMode")
+    public boolean demoMode() {
+        return currentUserService.isDemoMode();
     }
 }
