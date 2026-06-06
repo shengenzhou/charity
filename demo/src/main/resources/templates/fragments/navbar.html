@@ -11,22 +11,19 @@
             <a class="brand" th:href="@{/markets}">
                 <span class="brand-mark">PX</span>
                 <span class="brand-copy">
-                    <strong>PredictX Charity Market</strong>
+                    <strong>PolyCharity</strong>
                     <span>Prediction markets with built-in giving</span>
                 </span>
             </a>
 
             <div class="nav-links">
                 <a class="nav-link" th:classappend="${activePage == 'markets'} ? ' active'" th:href="@{/markets}">Markets</a>
+                <a class="nav-link" th:classappend="${activePage == 'games'} ? ' active'" th:href="@{/games}">Games</a>
                 <a class="nav-link" th:classappend="${activePage == 'portfolio'} ? ' active'" th:href="@{/portfolio}">Portfolio</a>
                 <a class="nav-link" th:classappend="${activePage == 'charities'} ? ' active'" th:href="@{/charities}">Charities</a>
             </div>
 
             <div class="nav-meta">
-                <span class="nav-chip">
-                    <span class="chip-label">User</span>
-                    <strong th:text="${currentUser.name}">Alice</strong>
-                </span>
                 <span class="balance-chip">
                     <span class="chip-label">Balance</span>
                     <strong th:text="${currentUser.balance}">1000.00</strong>
