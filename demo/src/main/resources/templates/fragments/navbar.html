@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="navbar" style="padding: 12px; border-bottom: 1px solid #ddd; margin-bottom: 24px;">
+    <a th:href="@{/markets}">Markets</a>
+    |
+    <a th:href="@{/portfolio}">Portfolio</a>
+    |
+    <a th:href="@{/charities}">Charities</a>
+
+    <span style="margin-left: 24px;">
+        Current user:
+        <strong th:text="${currentUser.name}">Alice</strong>
+    </span>
+
+    <span style="margin-left: 12px;">
+        Balance:
+        <strong th:text="${currentUser.balance}">1000.00</strong>
+    </span>
+
+    <span style="margin-left: 12px;">
+        Charity:
+        <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None'}">Red Cross</strong>
+    </span>
+
+    <form th:action="@{/users/switch}" method="post" style="display: inline; margin-left: 24px;">
+        <select name="userId">
+            <option th:each="user : ${users}"
+                    th:value="${user.id}"
+                    th:text="${user.name}"
+                    th:selected="${user.id == currentUser.id}">
+                Alice
+            </option>
+        </select>
+        <button type="submit">Switch</button>
+    </form>
+</nav>
+</body>
+</html>

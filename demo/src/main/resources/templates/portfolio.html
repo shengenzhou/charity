@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Portfolio</title>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<h1>Portfolio</h1>
+
+<div th:if="${successMessage}" style="color: green;" th:text="${successMessage}"></div>
+<div th:if="${errorMessage}" style="color: red;" th:text="${errorMessage}"></div>
+
+<h2>Summary</h2>
+
+<p><strong>User:</strong> <span th:text="${portfolio.userName}">Alice</span></p>
+<p><strong>Cash balance:</strong> <span th:text="${portfolio.balance}">1000.00</span></p>
+<p><strong>Selected charity:</strong> <span th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None'}">Red Cross</span></p>
+<p><strong>Total donated:</strong> <span th:text="${portfolio.totalDonated}">0.00</span></p>
+<p><strong>Total realized PnL:</strong> <span th:text="${portfolio.totalRealizedPnl}">0.00</span></p>
+<p><strong>Total unrealized PnL:</strong> <span th:text="${portfolio.totalUnrealizedPnl}">0.00</span></p>
+<p><strong>Total PnL:</strong> <span th:text="${portfolio.totalPnl}">0.00</span></p>
+
+<h2>Positions</h2>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+    <tr>
+        <th>Market</th>
+        <th>Outcome</th>
+        <th>Quantity</th>
+        <th>Average Entry</th>
+        <th>Current Price</th>
+        <th>Realized PnL</th>
+        <th>Unrealized PnL</th>
+        <th>Total PnL</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:if="${#lists.isEmpty(portfolio.positions)}">
+        <td colspan="8">No open positions yet.</td>
+    </tr>
+    <tr th:each="position : ${portfolio.positions}">
+        <td th:text="${position.marketQuestion}">Will it rain?</td>
+        <td th:text="${position.outcome}">YES</td>
+        <td th:text="${position.quantity}">10</td>
+        <td th:text="${position.averageEntryPrice}">0.42</td>
+        <td th:text="${position.currentPrice}">0.42</td>
+        <td th:text="${position.realizedPnl}">0.00</td>
+        <td th:text="${position.unrealizedPnl}">0.00</td>
+        <td th:text="${position.totalPnl}">0.00</td>
+    </tr>
+    </tbody>
+</table>
+
+<h2>Trade History</h2>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+    <tr>
+        <th>Date</th>
+        <th>Market</th>
+        <th>Side</th>
+        <th>Outcome</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Trade Value</th>
+        <th>Fee</th>
+        <th>Charity</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:if="${#lists.isEmpty(trades)}">
+        <td colspan="9">No trades yet.</td>
+    </tr>
+    <tr th:each="trade : ${trades}">
+        <td th:text="${trade.createdAt}">2026-06-06T12:00</td>
+        <td th:text="${trade.market.question}">Will it rain?</td>
+        <td th:text="${trade.side}">BUY</td>
+        <td th:text="${trade.outcome}">YES</td>
+        <td th:text="${trade.quantity}">10</td>
+        <td th:text="${trade.price}">0.42</td>
+        <td th:text="${trade.tradeValue}">4.20</td>
+        <td th:text="${trade.fee}">0.08</td>
+        <td th:text="${trade.charity != null ? trade.charity.name : 'None'}">Red Cross</td>
+    </tr>
+    </tbody>
+</table>
+
+<p><a th:href="@{/markets}">Back to markets</a></p>
+</body>
+</html>
