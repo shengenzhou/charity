@@ -4,6 +4,7 @@ import com.example.charitymarket.exception.NotFoundException;
 import com.example.charitymarket.model.User;
 import com.example.charitymarket.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -37,5 +38,9 @@ public class CurrentUserService {
             throw new NotFoundException("User not found: " + userId);
         }
         session.setAttribute(CURRENT_USER_ID, userId);
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 }

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Game Match</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css" />
+</head>
+<body>
+<div class="page-shell">
+    <div th:replace="~{fragments/navbar :: navbar('games')}"></div>
+
+    <main class="page">
+        <section class="hero">
+            <div class="hero-panel">
+                <span class="eyebrow">Match detail</span>
+                <h1 class="hero-title">Wordle Match #[[${match.matchId}]]</h1>
+                <p class="hero-copy" th:text="${match.resultSummary}">
+                    Waiting for an opponent.
+                </p>
+                <div class="hero-metrics">
+                    <div class="hero-metric">
+                        <span>Status</span>
+                        <strong th:text="${match.status}">OPEN</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Stake</span>
+                        <strong th:text="${match.betAmount}">25.00</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Prize pool</span>
+                        <strong th:text="${match.prizePool}">50.00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="impact-panel">
+                <span class="eyebrow" style="background: var(--charity-light); color: var(--primary);">Match rules</span>
+                <p class="muted">Same hidden word. Fewest tries wins. If tries tie, the lower solve time wins.</p>
+                <div class="impact-grid">
+                    <div class="impact-card">
+                        <div class="tiny">Fee/player</div>
+                        <div class="mono" th:text="${match.feeAmountPerPlayer}">0.25</div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="tiny">Winner</div>
+                        <div th:text="${match.winnerName != null ? match.winnerName : 'TBD'}">TBD</div>
+                    </div>
+                </div>
+                <form th:if="${match.currentUserCanJoin}" th:action="@{/games/join}" method="post" style="margin-top: 1rem;">
+                    <input type="hidden" name="matchId" th:value="${match.matchId}" />
+                    <button class="btn" type="submit">Join this duel</button>
+                </form>
+            </aside>
+        </section>
+
+        <div class="flash-stack">
+            <div class="flash success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="flash error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+        </div>
+
+        <section class="game-detail-grid">
+            <article class="surface-card game-board-panel">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title">Your board</h2>
+                        <p class="section-copy" th:if="${match.currentPlayer != null}">
+                            Attempts used: <span class="mono" th:text="${match.currentPlayer.attemptsUsed}">0</span>
+                        </p>
+                        <p class="section-copy" th:if="${match.currentPlayer == null}">
+                            Switch to one of the participating accounts to play.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="board" th:if="${match.currentPlayer != null}">
+                    <div class="board-row" th:each="row : ${match.currentPlayer.boardRows}">
+                        <div class="tile"
+                             th:each="letter, stat : ${row.letters}"
+                             th:classappend="${row.states[stat.index]}"
+                             th:text="${letter}">A</div>
+                    </div>
+                </div>
+
+                <form class="stack-form compact"
+                      th:if="${match.currentUserCanGuess}"
+                      th:action="@{/games/{id}/guess(id=${match.matchId})}"
+                      th:object="${guessRequest}"
+                      method="post">
+                    <label class="field-label" for="guess">Enter a 5-letter guess</label>
+                    <input id="guess" type="text" maxlength="5" th:field="*{guess}" placeholder="LIGHT" autocomplete="off" />
+                    <button class="btn" type="submit">Submit guess</button>
+                </form>
+
+                <div class="muted" th:if="${match.currentPlayer != null && !match.currentUserCanGuess}">
+                    <span th:text="${match.status == 'OPEN' ? 'Waiting for the second player to join.' : (match.currentPlayer.finished ? 'Your run is finished. Waiting for the final result or viewing the completed board.' : 'Guesses are currently unavailable.')}">
+                        Waiting for the second player to join.
+                    </span>
+                </div>
+            </article>
+
+            <article class="surface-card game-opponent-panel">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title">Opponent</h2>
+                        <p class="section-copy" th:text="${match.opponentPlayer != null ? match.opponentPlayer.name : 'No opponent yet'}">No opponent yet</p>
+                    </div>
+                </div>
+
+                <div class="status-stack">
+                    <div class="impact-card">
+                        <div class="tiny">Solved</div>
+                        <div th:text="${match.opponentPlayer != null && match.opponentPlayer.solved ? 'Yes' : 'Not yet'}">Not yet</div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="tiny">Attempts</div>
+                        <div class="mono" th:text="${match.opponentPlayer != null ? match.opponentPlayer.attemptsUsed : 0}">0</div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="tiny">Elapsed</div>
+                        <div class="mono" th:text="${match.opponentPlayer != null && match.opponentPlayer.elapsedSeconds != null ? match.opponentPlayer.elapsedSeconds + 's' : 'TBD'}">TBD</div>
+                    </div>
+                </div>
+
+                <div th:if="${match.revealOpponentGuesses && match.opponentPlayer != null}">
+                    <p class="section-copy">Completed board</p>
+                    <div class="board compact-board">
+                        <div class="board-row" th:each="row : ${match.opponentPlayer.boardRows}">
+                            <div class="tile"
+                                 th:each="letter, stat : ${row.letters}"
+                                 th:classappend="${row.states[stat.index]}"
+                                 th:text="${letter}">A</div>
+                        </div>
+                    </div>
+                    <p class="muted" th:if="${match.solutionWord != null}">
+                        Solution: <span class="mono" th:text="${match.solutionWord}">LIGHT</span>
+                    </p>
+                </div>
+
+                <p class="muted" th:if="${!match.revealOpponentGuesses}">
+                    Opponent guesses stay hidden until the match is finished so nobody can learn the answer mid-game.
+                </p>
+            </article>
+        </section>
+    </main>
+</div>
+</body>
+</html>

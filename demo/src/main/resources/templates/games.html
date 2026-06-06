@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Games</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css" />
+</head>
+<body>
+<div class="page-shell">
+    <div th:replace="~{fragments/navbar :: navbar('games')}"></div>
+
+    <main class="page">
+        <section class="hero">
+            <div class="hero-panel">
+                <span class="eyebrow">Head-to-head Wordle</span>
+                <h1 class="hero-title">Games</h1>
+                <p class="hero-copy">
+                    Challenge another account to the same five-letter puzzle. Each player escrows the same stake, both pay a 1% fee to their selected charity, and the winner takes the pooled bet.
+                </p>
+                <div class="hero-metrics">
+                    <div class="hero-metric">
+                        <span>Active matches</span>
+                        <strong th:text="${#lists.size(matches)}">0</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Current player</span>
+                        <strong th:text="${currentUser.name}">Alice</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Wordle fee</span>
+                        <strong>1% each side</strong>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="impact-panel">
+                <span class="eyebrow" style="background: var(--charity-light); color: var(--primary);">Create a duel</span>
+                <p class="impact-amount" th:text="${currentUser.balance}">1000.00</p>
+                <p class="muted">Your available balance. Creating a duel locks the stake plus fee immediately.</p>
+
+                <form class="stack-form" th:action="@{/games}" th:object="${createMatchRequest}" method="post">
+                    <label class="field-label" for="gameType">Game</label>
+                    <select id="gameType" th:field="*{gameType}">
+                        <option th:each="option : ${gameOptions}"
+                                th:value="${option.value}"
+                                th:text="${option.label + ' - ' + option.availability}"
+                                th:disabled="${option.availability != 'Live'}">
+                            Wordle - Live
+                        </option>
+                    </select>
+                    <label class="field-label" for="betAmount">Bet amount</label>
+                    <input id="betAmount" type="number" step="0.01" min="1.00" th:field="*{betAmount}" placeholder="25.00" />
+                    <button class="btn" type="submit">Create duel</button>
+                </form>
+            </aside>
+        </section>
+
+        <div class="flash-stack">
+            <div class="flash success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="flash error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+        </div>
+
+        <section>
+            <div class="section-head">
+                <div>
+                    <h2 class="section-title">Match lobby</h2>
+                    <p class="section-copy">Only live matches show here. Completed matches stay saved in the database but are removed from the active lobby.</p>
+                </div>
+                <form class="lobby-filters" th:action="@{/games}" method="get">
+                    <select name="gameType">
+                        <option value="">All games</option>
+                        <option th:each="option : ${gameOptions}"
+                                th:value="${option.value}"
+                                th:text="${option.label}"
+                                th:selected="${selectedGameType != null && selectedGameType == option.value}">
+                            Wordle
+                        </option>
+                    </select>
+                    <input type="number" name="minBetAmount" step="0.01" min="0" placeholder="Min bet" th:value="${minBetAmount}" />
+                    <input type="number" name="maxBetAmount" step="0.01" min="0" placeholder="Max bet" th:value="${maxBetAmount}" />
+                    <button class="btn-secondary" type="submit">Filter</button>
+                    <a class="action-link" th:href="@{/games}">Clear</a>
+                </form>
+            </div>
+
+            <div class="game-grid">
+                <article class="game-card" th:each="match : ${matches}">
+                    <div class="market-top">
+                        <div class="market-chips">
+                            <span class="market-chip">Match #[[${match.matchId}]]</span>
+                            <span class="market-chip" th:text="${match.gameType}">WORDLE</span>
+                            <span class="market-chip">Stake [[${match.betAmount}]]</span>
+                        </div>
+                        <span class="market-status"
+                              th:classappend="${#strings.toLowerCase(match.status)}"
+                              th:text="${match.status}">OPEN</span>
+                    </div>
+
+                    <h3 class="market-question">
+                        <span th:text="${match.players[0].name}">Alice</span>
+                        <span>vs</span>
+                        <span th:text="${match.players.size() > 1 ? match.players[1].name : 'Waiting for opponent'}">Bob</span>
+                    </h3>
+
+                    <div class="game-stat-row">
+                        <div class="impact-card">
+                            <div class="tiny">Prize pool</div>
+                            <div class="mono" th:text="${match.prizePool}">50.00</div>
+                        </div>
+                        <div class="impact-card">
+                            <div class="tiny">Fee/player</div>
+                            <div class="mono" th:text="${match.feeAmountPerPlayer}">0.25</div>
+                        </div>
+                    </div>
+
+                    <p class="muted game-summary" th:text="${match.resultSummary}">Waiting for an opponent.</p>
+
+                    <div class="price-actions">
+                        <a class="btn" th:href="@{/games/{id}(id=${match.matchId})}">Open match</a>
+                        <form th:if="${match.currentUserCanJoin}" th:action="@{/games/join}" method="post">
+                            <input type="hidden" name="matchId" th:value="${match.matchId}" />
+                            <button class="btn-secondary" type="submit">Join match</button>
+                        </form>
+                    </div>
+                </article>
+            </div>
+
+            <div class="surface-card game-empty-state" th:if="${#lists.isEmpty(matches)}">
+                <h3 class="card-title">No live matches for this filter</h3>
+                <p class="muted">Try another game or a wider bet range, or create a fresh duel.</p>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
