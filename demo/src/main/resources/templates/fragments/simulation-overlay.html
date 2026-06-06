@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="overlay">
+    <aside class="simulation-overlay">
+        <div class="simulation-overlay-head">
+            <div>
+                <div class="simulation-label">Demo Time</div>
+                <div class="simulation-value">
+                    <span th:text="${simulationState.currentTimestamp}">0</span>
+                    <span>/</span>
+                    <span th:text="${simulationState.expiryTimestamp}">4</span>
+                </div>
+            </div>
+            <div class="simulation-status"
+                 th:classappend="${simulationState.resolved} ? ' resolved' : ''"
+                 th:text="${simulationState.resolved} ? 'Resolved' : 'Live'">Live</div>
+        </div>
+
+        <div class="simulation-track">
+            <span class="simulation-dot"
+                  th:each="i : ${#numbers.sequence(0, simulationState.expiryTimestamp)}"
+                  th:classappend="${i <= simulationState.currentTimestamp} ? ' active' : ''"
+                  th:text="${i}">0</span>
+        </div>
+
+        <div class="simulation-meta">
+            <span>Time To Expiry</span>
+            <strong th:text="${simulationState.expiryTimestamp - simulationState.currentTimestamp} + ' steps'">4 steps</strong>
+        </div>
+
+        <div class="simulation-actions">
+            <form th:each="i : ${#numbers.sequence(0, simulationState.expiryTimestamp)}"
+                  th:action="@{/simulation/timestamp}"
+                  method="post">
+                <input type="hidden" name="timestampIndex" th:value="${i}" />
+                <button class="simulation-btn"
+                        type="submit"
+                        th:disabled="${i < simulationState.currentTimestamp}"
+                        th:classappend="${i == simulationState.currentTimestamp} ? ' current' : ''"
+                        th:text="'T' + ${i}">
+                    T0
+                </button>
+            </form>
+        </div>
+
+        <form th:action="@{/simulation/reset}" method="post" class="simulation-reset">
+            <button class="btn-secondary" type="submit">Reset Demo</button>
+        </form>
+    </aside>
+</th:block>
+</body>
+</html>

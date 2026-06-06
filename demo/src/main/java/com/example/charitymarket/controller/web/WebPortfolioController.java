@@ -5,6 +5,7 @@ import com.example.charitymarket.repository.UserRepository;
 import com.example.charitymarket.service.CurrentUserService;
 import com.example.charitymarket.service.PortfolioService;
 import jakarta.servlet.http.HttpSession;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +27,9 @@ public class WebPortfolioController {
         model.addAttribute("currentUser", currentUserService.getCurrentUser(session));
         model.addAttribute("users", userRepository.findAll());
         model.addAttribute("trades", tradeRepository.findByUserIdOrderByCreatedAtDesc(userId));
+        model.addAttribute("settledPositions", portfolioService.getAllPositions(userId).stream()
+                .filter(position -> position.getQuantity().compareTo(BigDecimal.ZERO) == 0)
+                .toList());
         return "portfolio";
     }
 }

@@ -93,6 +93,7 @@ public class WebTradeController {
                 "currentPrice",
                 tradeRequest.getOutcome() == Outcome.YES ? market.getYesPrice() : market.getNoPrice());
         model.addAttribute("feeRate", tradeService.getFeeRate());
+        model.addAttribute("marketOpen", market.getStatus() == com.example.charitymarket.model.MarketStatus.OPEN);
         if (errorMessage != null) {
             model.addAttribute("errorMessage", errorMessage);
         }

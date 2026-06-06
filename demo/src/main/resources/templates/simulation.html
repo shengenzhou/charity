@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Simulation</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css" />
+</head>
+<body>
+<div class="page-shell">
+    <div th:replace="~{fragments/navbar :: navbar('simulation')}"></div>
+    <div th:replace="~{fragments/simulation-overlay :: overlay}"></div>
+
+    <main class="page">
+        <section class="hero">
+            <div class="hero-panel">
+                <span class="eyebrow">Demo control panel</span>
+                <h1 class="hero-title">Simulation</h1>
+                <p class="hero-copy">
+                    Move the market demo forward through fixed timestamps, watch stored prices update, and trigger final settlement at timestamp 4.
+                </p>
+                <div class="hero-metrics">
+                    <div class="hero-metric">
+                        <span>Current timestamp</span>
+                        <strong th:text="${currentTimestamp}">0</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Max timestamp</span>
+                        <strong>4</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span>Rule</span>
+                        <strong>Forward only</strong>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="impact-panel">
+                <span class="eyebrow" style="background: var(--charity-light); color: var(--primary);">Controls</span>
+                <p class="muted">Reset returns balances, donations, trades, positions, and markets to demo state.</p>
+                <div class="filter-pills" style="margin-top: 1rem;">
+                    <form th:each="i : ${#numbers.sequence(0, 4)}" th:action="@{/simulation/timestamp}" method="post">
+                        <input type="hidden" name="timestampIndex" th:value="${i}" />
+                        <button class="btn-secondary" type="submit" th:text="'T' + ${i}">T0</button>
+                    </form>
+                </div>
+                <form th:action="@{/simulation/reset}" method="post" style="margin-top: 1rem;">
+                    <button class="btn" type="submit">Reset simulation</button>
+                </form>
+            </aside>
+        </section>
+
+        <div class="flash-stack">
+            <div class="flash success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="flash error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+        </div>
+
+        <section class="table-card">
+            <div class="table-meta">
+                <div>
+                    <h2 class="section-title">Stored market snapshots</h2>
+                    <p class="section-copy">Each row shows fixed YES prices for timestamps 0 through 4, plus current market resolution state.</p>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Market</th>
+                    <th>Status</th>
+                    <th>Resolved</th>
+                    <th>T0</th>
+                    <th>T1</th>
+                    <th>T2</th>
+                    <th>T3</th>
+                    <th>T4</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="view : ${marketSimulationViews}">
+                    <td th:text="${view.market.question}">Will it rain?</td>
+                    <td th:text="${view.market.status}">OPEN</td>
+                    <td th:text="${view.market.resolvedOutcome != null ? view.market.resolvedOutcome : 'Pending'}">Pending</td>
+                    <td class="mono" th:each="snapshot : ${view.snapshots}" th:text="${snapshot.yesPrice}">0.42</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
+</body>
+</html>
