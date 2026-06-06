@@ -381,6 +381,11 @@ select {
     flex-wrap: wrap;
 }
 
+.filter-pills {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
 .pill,
 .market-chip,
 .ticket-tag {
