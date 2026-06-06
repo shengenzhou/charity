@@ -7,7 +7,9 @@ import com.example.charitymarket.model.User;
 import com.example.charitymarket.repository.CharityRepository;
 import com.example.charitymarket.repository.MarketRepository;
 import com.example.charitymarket.repository.UserRepository;
+import com.example.charitymarket.service.SimulationService;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -20,9 +22,11 @@ public class DataSeeder {
     CommandLineRunner seedDemoData(
             CharityRepository charityRepository,
             UserRepository userRepository,
-            MarketRepository marketRepository) {
+            MarketRepository marketRepository,
+            SimulationService simulationService) {
         return args -> {
             if (userRepository.count() > 0) {
+                simulationService.initializeSimulation();
                 return;
             }
 
@@ -69,20 +73,43 @@ public class DataSeeder {
                             .question("Will it rain in Amsterdam tomorrow?")
                             .yesPrice(new BigDecimal("0.42"))
                             .noPrice(new BigDecimal("0.58"))
+                            .initialYesPrice(new BigDecimal("0.42"))
+                            .initialNoPrice(new BigDecimal("0.58"))
+                            .currentTimestamp(0)
+                            .expiryTimestamp(4)
+                            .expiresAt(LocalDateTime.now().plusDays(1))
+                            .resolvedOutcome(null)
+                            .payoutCompleted(false)
                             .status(MarketStatus.OPEN)
                             .build(),
                     Market.builder()
                             .question("Will Bitcoin be above $100k by the end of the month?")
                             .yesPrice(new BigDecimal("0.61"))
                             .noPrice(new BigDecimal("0.39"))
+                            .initialYesPrice(new BigDecimal("0.61"))
+                            .initialNoPrice(new BigDecimal("0.39"))
+                            .currentTimestamp(0)
+                            .expiryTimestamp(4)
+                            .expiresAt(LocalDateTime.now().plusDays(2))
+                            .resolvedOutcome(null)
+                            .payoutCompleted(false)
                             .status(MarketStatus.OPEN)
                             .build(),
                     Market.builder()
                             .question("Will Team A win the final?")
                             .yesPrice(new BigDecimal("0.35"))
                             .noPrice(new BigDecimal("0.65"))
+                            .initialYesPrice(new BigDecimal("0.35"))
+                            .initialNoPrice(new BigDecimal("0.65"))
+                            .currentTimestamp(0)
+                            .expiryTimestamp(4)
+                            .expiresAt(LocalDateTime.now().plusDays(3))
+                            .resolvedOutcome(null)
+                            .payoutCompleted(false)
                             .status(MarketStatus.OPEN)
                             .build()));
+
+            simulationService.initializeSimulation();
         };
     }
 }

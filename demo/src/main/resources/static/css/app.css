@@ -516,6 +516,15 @@ select {
     transform: translateY(-1px);
 }
 
+.btn:disabled,
+.btn-secondary:disabled,
+.btn-ghost:disabled,
+button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .btn-secondary {
     background: var(--secondary);
     border-color: var(--border);

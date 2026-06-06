@@ -11,4 +11,6 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     Optional<Position> findByUserIdAndMarketIdAndOutcome(Long userId, Long marketId, Outcome outcome);
 
     List<Position> findByUserId(Long userId);
+
+    List<Position> findByMarketId(Long marketId);
 }

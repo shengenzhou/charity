@@ -25,8 +25,8 @@
                         <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None selected'}">Red Cross</strong>
                     </div>
                     <div class="ticket-stat">
-                        <div class="tiny">Fee rate</div>
-                        <strong class="mono" th:text="${feeRate}">0.02</strong>
+                        <div class="tiny">Market status</div>
+                        <strong th:text="${market.status}">OPEN</strong>
                     </div>
                 </div>
             </div>
@@ -67,9 +67,16 @@
                         <div class="field-error" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}"></div>
                     </div>
 
-                    <div class="form-actions">
+                    <div class="empty-state" th:if="${!marketOpen}">
+                        This market is not open for trading anymore.
+                    </div>
+
+                    <div class="form-actions" th:if="${marketOpen}">
                         <button class="btn" type="submit">Submit trade</button>
                         <a class="btn-ghost" th:href="@{/markets}">Cancel</a>
+                    </div>
+                    <div class="form-actions" th:if="${!marketOpen}">
+                        <a class="btn-ghost" th:href="@{/markets}">Back to markets</a>
                     </div>
                 </form>
             </section>

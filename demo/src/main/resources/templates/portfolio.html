@@ -139,6 +139,40 @@
             </aside>
         </div>
 
+        <section class="table-card" style="margin-top: 1.2rem;" th:if="${!#lists.isEmpty(settledPositions)}">
+            <div class="table-meta">
+                <div>
+                    <h2 class="section-title">Settled positions</h2>
+                    <p class="section-copy">Resolved positions stay visible here after automatic payout.</p>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Market</th>
+                    <th>Outcome</th>
+                    <th>Quantity</th>
+                    <th>Average Entry</th>
+                    <th>Settlement Price</th>
+                    <th>Realized PnL</th>
+                    <th>Total PnL</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="position : ${settledPositions}">
+                    <td th:text="${position.marketQuestion}">Will it rain?</td>
+                    <td th:text="${position.outcome}">YES</td>
+                    <td class="mono" th:text="${position.quantity}">0.00</td>
+                    <td class="mono" th:text="${position.averageEntryPrice}">0.42</td>
+                    <td class="mono" th:text="${position.currentPrice}">1.00</td>
+                    <td class="mono" th:text="${position.realizedPnl}">0.00</td>
+                    <td class="mono" th:text="${position.totalPnl}">0.00</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
         <section class="table-card" style="margin-top: 1.2rem;">
             <div class="table-meta">
                 <div>
