@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Private Access</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css" />
+</head>
+<body>
+<div class="page-shell">
+    <main class="page access-page">
+        <section class="hero access-hero">
+            <div class="hero-panel">
+                <span class="eyebrow">Hackathon access</span>
+                <h1 class="hero-title">Private Invite Only</h1>
+                <p class="hero-copy">
+                    This build is set up for two players. Open your private invite link, or paste your access token below to enter the app.
+                </p>
+                <div class="flash-stack">
+                    <div class="flash success" th:if="${successMessage}" th:text="${successMessage}"></div>
+                    <div class="flash error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+                </div>
+            </div>
+
+            <aside class="impact-panel">
+                <span class="eyebrow" style="background: var(--charity-light); color: var(--primary);">Join</span>
+                <p class="muted">Paste the token from your invite URL if the link did not log you in automatically.</p>
+                <form class="stack-form" th:action="@{/access}" method="post">
+                    <label class="field-label" for="token">Invite token</label>
+                    <input id="token" type="text" name="token" placeholder="paste-player-token" autocomplete="off" />
+                    <button class="btn" type="submit">Enter app</button>
+                </form>
+            </aside>
+        </section>
+    </main>
+</div>
+</body>
+</html>

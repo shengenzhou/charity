@@ -1,5 +1,7 @@
 package com.example.charitymarket.config;
 
+import com.example.charitymarket.config.AuthMode;
+import com.example.charitymarket.config.HackathonAuthProperties;
 import com.example.charitymarket.model.Charity;
 import com.example.charitymarket.model.Market;
 import com.example.charitymarket.model.MarketStatus;
@@ -23,7 +25,8 @@ public class DataSeeder {
             CharityRepository charityRepository,
             UserRepository userRepository,
             MarketRepository marketRepository,
-            SimulationService simulationService) {
+            SimulationService simulationService,
+            HackathonAuthProperties authProperties) {
         return args -> {
             if (userRepository.count() > 0) {
                 simulationService.initializeSimulation();
@@ -48,25 +51,41 @@ public class DataSeeder {
 
             charityRepository.saveAll(List.of(redCross, wwf, doctorsWithoutBorders));
 
-            userRepository.saveAll(List.of(
-                    User.builder()
-                            .name("Alice")
-                            .email("alice@example.com")
-                            .balance(new BigDecimal("1000.00"))
-                            .selectedCharity(redCross)
-                            .build(),
-                    User.builder()
-                            .name("Bob")
-                            .email("bob@example.com")
-                            .balance(new BigDecimal("1000.00"))
-                            .selectedCharity(wwf)
-                            .build(),
-                    User.builder()
-                            .name("Charlie")
-                            .email("charlie@example.com")
-                            .balance(new BigDecimal("1000.00"))
-                            .selectedCharity(doctorsWithoutBorders)
-                            .build()));
+            if (authProperties.getMode() == AuthMode.INVITE) {
+                userRepository.saveAll(List.of(
+                        User.builder()
+                                .name("Alice")
+                                .email(authProperties.getAliceEmail())
+                                .balance(new BigDecimal("1000.00"))
+                                .selectedCharity(redCross)
+                                .build(),
+                        User.builder()
+                                .name("Bob")
+                                .email(authProperties.getBobEmail())
+                                .balance(new BigDecimal("1000.00"))
+                                .selectedCharity(wwf)
+                                .build()));
+            } else {
+                userRepository.saveAll(List.of(
+                        User.builder()
+                                .name("Alice")
+                                .email("alice@example.com")
+                                .balance(new BigDecimal("1000.00"))
+                                .selectedCharity(redCross)
+                                .build(),
+                        User.builder()
+                                .name("Bob")
+                                .email("bob@example.com")
+                                .balance(new BigDecimal("1000.00"))
+                                .selectedCharity(wwf)
+                                .build(),
+                        User.builder()
+                                .name("Charlie")
+                                .email("charlie@example.com")
+                                .balance(new BigDecimal("1000.00"))
+                                .selectedCharity(doctorsWithoutBorders)
+                                .build()));
+            }
 
             marketRepository.saveAll(List.of(
                     Market.builder()

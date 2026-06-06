@@ -32,7 +32,7 @@
                     <span class="chip-label">Charity</span>
                     <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'None selected'}">Red Cross</strong>
                 </span>
-                <form class="user-switch-form" th:action="@{/users/switch}" method="post">
+                <form class="user-switch-form" th:if="${demoMode}" th:action="@{/users/switch}" method="post">
                     <select name="userId" aria-label="Switch user">
                         <option th:each="user : ${users}"
                                 th:value="${user.id}"
@@ -42,6 +42,13 @@
                         </option>
                     </select>
                     <button class="btn-secondary" type="submit">Switch</button>
+                </form>
+                <div class="charity-chip" th:if="${!demoMode}">
+                    <span class="chip-label">Player</span>
+                    <strong th:text="${currentUser.name}">Alice</strong>
+                </div>
+                <form th:if="${!demoMode}" th:action="@{/access/logout}" method="post">
+                    <button class="btn-secondary" type="submit">Log out</button>
                 </form>
             </div>
         </nav>
