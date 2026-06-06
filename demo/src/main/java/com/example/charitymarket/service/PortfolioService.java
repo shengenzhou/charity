@@ -69,6 +69,13 @@ public class PortfolioService {
                 .toList();
     }
 
+    public List<PositionResponse> getAllPositions(Long userId) {
+        getUser(userId);
+        return positionRepository.findByUserId(userId).stream()
+                .map(this::toPositionResponse)
+                .toList();
+    }
+
     public List<DonationResponse> getDonations(Long userId) {
         getUser(userId);
         return charityDonationRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()

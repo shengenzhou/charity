@@ -516,6 +516,15 @@ select {
     transform: translateY(-1px);
 }
 
+.btn:disabled,
+.btn-secondary:disabled,
+.btn-ghost:disabled,
+button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .btn-secondary {
     background: var(--secondary);
     border-color: var(--border);
@@ -572,6 +581,14 @@ select {
     grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
     gap: 1.2rem;
     align-items: start;
+}
+
+.split-layout > * {
+    min-width: 0;
+}
+
+.split-layout .table-card {
+    overflow-x: auto;
 }
 
 .table-card table {
@@ -881,6 +898,129 @@ select {
     background: currentColor;
 }
 
+.simulation-overlay {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 9999;
+    width: min(360px, calc(100vw - 24px));
+    padding: 1rem;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 24px 50px rgba(30, 40, 82, 0.16);
+}
+
+.simulation-overlay-head,
+.simulation-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.simulation-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.simulation-value {
+    margin-top: 0.2rem;
+    font-family: "Space Mono", monospace;
+    font-size: 1.3rem;
+    color: var(--primary);
+}
+
+.simulation-status {
+    border-radius: 999px;
+    padding: 0.45rem 0.75rem;
+    background: var(--secondary);
+    color: var(--primary);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.simulation-status.resolved {
+    background: var(--win-light);
+    color: var(--win);
+}
+
+.simulation-track {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.simulation-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 999px;
+    background: var(--secondary);
+    color: var(--muted);
+    font-family: "Space Mono", monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.simulation-dot.active {
+    background: var(--primary);
+    color: #fff;
+}
+
+.simulation-meta {
+    margin-bottom: 0.9rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.simulation-meta strong {
+    color: var(--primary);
+    font-family: "Space Mono", monospace;
+}
+
+.simulation-actions {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.45rem;
+}
+
+.simulation-actions form,
+.simulation-reset {
+    margin: 0;
+}
+
+.simulation-btn {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.65rem 0.3rem;
+    background: #fff;
+    color: var(--primary);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.simulation-btn.current {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.simulation-reset {
+    margin-top: 0.75rem;
+}
+
+.simulation-reset .btn-secondary {
+    width: 100%;
+}
+
 @media (max-width: 980px) {
     .app-nav {
         border-radius: 30px;
@@ -932,5 +1072,10 @@ select {
 
     .board-row {
         grid-template-columns: repeat(5, minmax(0, 1fr));
+    .simulation-overlay {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;SS
+        width: auto;
     }
 }
