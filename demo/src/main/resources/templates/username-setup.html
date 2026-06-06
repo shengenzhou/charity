@@ -9,10 +9,10 @@
     <main class="page access-page">
         <section class="hero access-hero">
             <div class="hero-panel">
-                <span class="eyebrow">Hackathon access</span>
+                <span class="eyebrow">One-time setup</span>
                 <h1 class="hero-title">Choose Your Username</h1>
                 <p class="hero-copy">
-                    This build is set up for two players. Enter your username to claim an open player slot, or use the same username again to get back into your session on another device.
+                    Pick the name that should appear across the game, portfolio, and charity pages. You only need to do this once.
                 </p>
                 <div class="flash-stack">
                     <div class="flash success" th:if="${successMessage}" th:text="${successMessage}"></div>
@@ -21,12 +21,11 @@
             </div>
 
             <aside class="impact-panel">
-                <span class="eyebrow" style="background: var(--charity-light); color: var(--primary);">Join</span>
-                <p class="muted">No token needed. Just pick the name you want to play with.</p>
-                <form class="stack-form" th:action="@{/access}" method="post">
+                <span class="eyebrow" style="background: var(--charity-light); color: var(--primary);">Profile</span>
+                <form class="stack-form" th:action="@{/access/username}" method="post">
                     <label class="field-label" for="username">Username</label>
                     <input id="username" type="text" name="username" minlength="2" maxlength="20" placeholder="Your name" autocomplete="nickname" />
-                    <button class="btn" type="submit">Enter app</button>
+                    <button class="btn" type="submit">Save username</button>
                 </form>
             </aside>
         </section>

@@ -27,6 +27,7 @@ public class User {
     private String name;
     private String email;
     private BigDecimal balance;
+    private boolean usernameConfigured;
 
     @ManyToOne
     private Charity selectedCharity;

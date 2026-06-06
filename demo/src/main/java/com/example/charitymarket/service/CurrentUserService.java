@@ -8,6 +8,7 @@ import com.example.charitymarket.model.User;
 import com.example.charitymarket.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,7 @@ public class CurrentUserService {
                 userId = 1L;
                 session.setAttribute(CURRENT_USER_ID, userId);
             } else {
-                throw new BadRequestException("No active player session. Use an invite link first.");
+                throw new BadRequestException("No active player session. Pick a username first.");
             }
         }
 
@@ -42,13 +43,7 @@ public class CurrentUserService {
     }
 
     public void switchUser(Long userId, HttpSession session) {
-        if (!isDemoMode()) {
-            throw new BadRequestException("User switching is disabled outside demo mode.");
-        }
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("User not found: " + userId);
-        }
-        session.setAttribute(CURRENT_USER_ID, userId);
+        throw new BadRequestException("Account switching is disabled.");
     }
 
     public List<User> getAllUsers() {
@@ -68,35 +63,42 @@ public class CurrentUserService {
         return userId != null && userRepository.existsById(userId);
     }
 
-    public void loginWithInviteToken(String token, HttpSession session) {
-        String normalizedToken = token == null ? "" : token.trim();
-        if (normalizedToken.isBlank()) {
-            throw new BadRequestException("Invite token is required.");
+    public void loginOrRegisterWithUsername(HttpSession session, String username) {
+        String normalizedUsername = normalizeUsername(username);
+
+        Optional<User> existingUser = userRepository.findAll().stream()
+                .filter(User::isUsernameConfigured)
+                .filter(user -> user.getName() != null)
+                .filter(user -> user.getName().equalsIgnoreCase(normalizedUsername))
+                .findFirst();
+        if (existingUser.isPresent()) {
+            session.setAttribute(CURRENT_USER_ID, existingUser.get().getId());
+            return;
         }
 
-        String email = resolveInviteEmail(normalizedToken);
-        User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new NotFoundException("Invite user not found for " + email));
-        session.setAttribute(CURRENT_USER_ID, user.getId());
+        User availableUser = userRepository.findAll().stream()
+                .filter(user -> !user.isUsernameConfigured())
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Both player slots are already taken."));
+
+        availableUser.setName(normalizedUsername);
+        availableUser.setUsernameConfigured(true);
+        userRepository.save(availableUser);
+        session.setAttribute(CURRENT_USER_ID, availableUser.getId());
     }
 
     public void logout(HttpSession session) {
         session.invalidate();
     }
 
-    private String resolveInviteEmail(String token) {
-        if (matchesToken(token, authProperties.getAliceToken())) {
-            return authProperties.getAliceEmail();
+    private String normalizeUsername(String username) {
+        String normalizedUsername = username == null ? "" : username.trim();
+        if (normalizedUsername.length() < 2 || normalizedUsername.length() > 20) {
+            throw new BadRequestException("Username must be between 2 and 20 characters.");
         }
-        if (matchesToken(token, authProperties.getBobToken())) {
-            return authProperties.getBobEmail();
+        if (!normalizedUsername.matches("[A-Za-z0-9 _-]+")) {
+            throw new BadRequestException("Username can only contain letters, numbers, spaces, - and _.");
         }
-        throw new BadRequestException("Invite token is invalid.");
-    }
-
-    private boolean matchesToken(String providedToken, String configuredToken) {
-        return configuredToken != null
-                && !configuredToken.isBlank()
-                && configuredToken.equals(providedToken);
+        return normalizedUsername;
     }
 }

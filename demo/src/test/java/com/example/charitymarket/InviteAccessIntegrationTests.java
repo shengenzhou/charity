@@ -1,6 +1,7 @@
 package com.example.charitymarket;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,11 +14,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-@SpringBootTest(properties = {
-        "app.auth.mode=INVITE",
-        "app.auth.alice-token=alice-hackathon-token",
-        "app.auth.bob-token=bob-hackathon-token"
-})
+@SpringBootTest(properties = "app.auth.mode=INVITE")
 @AutoConfigureMockMvc
 class InviteAccessIntegrationTests {
 
@@ -25,12 +22,13 @@ class InviteAccessIntegrationTests {
     private MockMvc mockMvc;
 
     @Test
-    void inviteModeRequiresAccessTokenAndHidesUserSwitcher() throws Exception {
+    void inviteModeUsesUsernameOnlyAndHidesUserSwitcher() throws Exception {
         mockMvc.perform(get("/markets"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/access"));
 
-        MvcResult accessResult = mockMvc.perform(get("/access").param("token", "alice-hackathon-token"))
+        MvcResult accessResult = mockMvc.perform(post("/access")
+                        .param("username", "Roni"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/markets"))
                 .andReturn();
@@ -39,7 +37,7 @@ class InviteAccessIntegrationTests {
 
         mockMvc.perform(get("/markets").session(session))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Alice")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Roni")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Log out")))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Switch"))));
     }

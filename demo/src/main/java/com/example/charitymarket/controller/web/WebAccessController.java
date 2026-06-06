@@ -4,7 +4,6 @@ import com.example.charitymarket.service.CurrentUserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,11 +16,7 @@ public class WebAccessController {
     private final CurrentUserService currentUserService;
 
     @GetMapping("/access")
-    public String access(
-            @RequestParam(required = false) String token,
-            HttpSession session,
-            Model model,
-            RedirectAttributes redirectAttributes) {
+    public String access(HttpSession session) {
         if (!currentUserService.isInviteMode()) {
             return "redirect:/markets";
         }
@@ -30,36 +25,42 @@ public class WebAccessController {
             return "redirect:/markets";
         }
 
-        if (token != null && !token.isBlank()) {
-            try {
-                currentUserService.loginWithInviteToken(token, session);
-                redirectAttributes.addFlashAttribute("successMessage", "Access granted. You're signed in.");
-                return "redirect:/markets";
-            } catch (RuntimeException exception) {
-                model.addAttribute("errorMessage", exception.getMessage());
-            }
-        }
-
         return "access";
     }
 
     @PostMapping("/access")
-    public String submitAccessToken(
-            @RequestParam String token,
+    public String submitUsername(
+            @RequestParam String username,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         if (!currentUserService.isInviteMode()) {
             return "redirect:/markets";
         }
+        if (currentUserService.hasAuthenticatedUser(session)) {
+            return "redirect:/markets";
+        }
 
         try {
-            currentUserService.loginWithInviteToken(token, session);
-            redirectAttributes.addFlashAttribute("successMessage", "Access granted. You're signed in.");
+            currentUserService.loginOrRegisterWithUsername(session, username);
+            redirectAttributes.addFlashAttribute("successMessage", "You are in. Good luck.");
             return "redirect:/markets";
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/access";
         }
+    }
+
+    @GetMapping("/access/username")
+    public String usernameSetup() {
+        return "redirect:/access";
+    }
+
+    @PostMapping("/access/username")
+    public String submitLegacyUsername(
+            @RequestParam String username,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        return submitUsername(username, session, redirectAttributes);
     }
 
     @PostMapping("/access/logout")

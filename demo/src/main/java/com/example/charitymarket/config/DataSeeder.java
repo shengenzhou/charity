@@ -54,15 +54,17 @@ public class DataSeeder {
             if (authProperties.getMode() == AuthMode.INVITE) {
                 userRepository.saveAll(List.of(
                         User.builder()
-                                .name("Alice")
+                                .name(null)
                                 .email(authProperties.getAliceEmail())
                                 .balance(new BigDecimal("1000.00"))
+                                .usernameConfigured(false)
                                 .selectedCharity(redCross)
                                 .build(),
                         User.builder()
-                                .name("Bob")
+                                .name(null)
                                 .email(authProperties.getBobEmail())
                                 .balance(new BigDecimal("1000.00"))
+                                .usernameConfigured(false)
                                 .selectedCharity(wwf)
                                 .build()));
             } else {
@@ -71,18 +73,21 @@ public class DataSeeder {
                                 .name("Alice")
                                 .email("alice@example.com")
                                 .balance(new BigDecimal("1000.00"))
+                                .usernameConfigured(true)
                                 .selectedCharity(redCross)
                                 .build(),
                         User.builder()
                                 .name("Bob")
                                 .email("bob@example.com")
                                 .balance(new BigDecimal("1000.00"))
+                                .usernameConfigured(true)
                                 .selectedCharity(wwf)
                                 .build(),
                         User.builder()
                                 .name("Charlie")
                                 .email("charlie@example.com")
                                 .balance(new BigDecimal("1000.00"))
+                                .usernameConfigured(true)
                                 .selectedCharity(doctorsWithoutBorders)
                                 .build()));
             }

@@ -30,8 +30,11 @@ public class CharityDonation {
     @ManyToOne(optional = false)
     private Charity charity;
 
-    @OneToOne(optional = false)
+    @OneToOne
     private Trade trade;
+
+    @ManyToOne
+    private WordleMatch wordleMatch;
 
     private BigDecimal amount;
     private LocalDateTime createdAt;

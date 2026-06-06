@@ -3,6 +3,7 @@ package com.example.charitymarket;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,13 +16,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class WebUiIntegrationTests {
+
+    private static final String CURRENT_USER_ID = "currentUserId";
 
     @Autowired
     private MockMvc mockMvc;
@@ -37,19 +42,16 @@ class WebUiIntegrationTests {
         mockMvc.perform(get("/markets"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Markets")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Will it rain in Amsterdam tomorrow?")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Alice")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Will it rain in Amsterdam tomorrow?")));
     }
 
     @Test
     void webTradeFlowRedirectsToPortfolioAndUpdatesSessionUser() throws Exception {
-        MvcResult switchResult = mockMvc.perform(post("/users/switch").param("userId", "2"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/markets"))
-                .andReturn();
+        MockHttpSession bobSession = new MockHttpSession();
+        bobSession.setAttribute(CURRENT_USER_ID, 2L);
 
         mockMvc.perform(post("/trades")
-                        .session((org.springframework.mock.web.MockHttpSession) switchResult.getRequest().getSession(false))
+                        .session(bobSession)
                         .param("userId", "2")
                         .param("marketId", "1")
                         .param("outcome", "YES")
@@ -59,10 +61,9 @@ class WebUiIntegrationTests {
                 .andExpect(redirectedUrl("/portfolio"));
 
         mockMvc.perform(get("/portfolio")
-                        .session((org.springframework.mock.web.MockHttpSession) switchResult.getRequest().getSession(false)))
+                        .session(bobSession))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Portfolio")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Bob")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("WWF")));
     }
 
@@ -99,12 +100,8 @@ class WebUiIntegrationTests {
         String solutionWord = createdMatch.getSolutionWord();
         String wrongGuess = "BRAVE".equals(solutionWord) ? "QUEST" : "BRAVE";
 
-        MvcResult bobSwitchResult = mockMvc.perform(post("/users/switch")
-                        .param("userId", "2"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/markets"))
-                .andReturn();
-        MockHttpSession bobSession = (MockHttpSession) bobSwitchResult.getRequest().getSession(false);
+        MockHttpSession bobSession = new MockHttpSession();
+        bobSession.setAttribute(CURRENT_USER_ID, 2L);
 
         mockMvc.perform(post("/games/join")
                         .session(bobSession)
@@ -144,7 +141,7 @@ class WebUiIntegrationTests {
         User alice = userRepository.findById(1L).orElseThrow();
         User bob = userRepository.findById(2L).orElseThrow();
 
-        org.assertj.core.api.Assertions.assertThat(settledMatch.getWinner().getName()).isEqualTo("Alice");
+        org.assertj.core.api.Assertions.assertThat(settledMatch.getWinner().getId()).isEqualTo(1L);
         org.assertj.core.api.Assertions.assertThat(alice.getBalance())
                 .isEqualByComparingTo(aliceStartingBalance.subtract(new BigDecimal("25.25")).add(new BigDecimal("50.00")));
         org.assertj.core.api.Assertions.assertThat(bob.getBalance())
@@ -152,12 +149,31 @@ class WebUiIntegrationTests {
 
         mockMvc.perform(get("/games/" + createdMatch.getId()).session(aliceSession))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Alice won on the time tiebreak.")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("won on the time tiebreak.")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Solution:")));
 
         mockMvc.perform(get("/games").session(aliceSession))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Alice won on the time tiebreak."))))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("No live matches for this filter")));
+    }
+
+    @Test
+    void wordleEntryFeeAppearsInPortfolioDonationTotal() throws Exception {
+        MvcResult sessionResult = mockMvc.perform(get("/games"))
+                .andExpect(status().isOk())
+                .andReturn();
+        MockHttpSession session = (MockHttpSession) sessionResult.getRequest().getSession(false);
+
+        mockMvc.perform(post("/games")
+                        .session(session)
+                        .param("gameType", "WORDLE")
+                        .param("betAmount", "25.00"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/games"));
+
+        mockMvc.perform(get("/api/users/1/portfolio"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalDonated").value(0.25));
     }
 }

@@ -6,12 +6,14 @@ import com.example.charitymarket.dto.wordle.MatchResponse;
 import com.example.charitymarket.exception.BadRequestException;
 import com.example.charitymarket.exception.NotFoundException;
 import com.example.charitymarket.model.Charity;
+import com.example.charitymarket.model.CharityDonation;
 import com.example.charitymarket.model.GameType;
 import com.example.charitymarket.model.User;
 import com.example.charitymarket.model.WordleGuess;
 import com.example.charitymarket.model.WordleMatch;
 import com.example.charitymarket.model.WordleMatchPlayer;
 import com.example.charitymarket.model.WordleMatchStatus;
+import com.example.charitymarket.repository.CharityDonationRepository;
 import com.example.charitymarket.repository.CharityRepository;
 import com.example.charitymarket.repository.UserRepository;
 import com.example.charitymarket.repository.WordleGuessRepository;
@@ -49,6 +51,7 @@ public class WordleService {
 
     private final UserRepository userRepository;
     private final CharityRepository charityRepository;
+    private final CharityDonationRepository charityDonationRepository;
     private final WordleMatchRepository wordleMatchRepository;
     private final WordleMatchPlayerRepository wordleMatchPlayerRepository;
     private final WordleGuessRepository wordleGuessRepository;
@@ -83,8 +86,6 @@ public class WordleService {
         BigDecimal feeAmount = calculateFee(betAmount);
         validateCanFundEntry(creator, betAmount, feeAmount);
 
-        chargeEntry(creator, betAmount, feeAmount);
-
         LocalDateTime now = LocalDateTime.now();
         WordleMatch match = wordleMatchRepository.save(WordleMatch.builder()
                 .creator(creator)
@@ -97,6 +98,8 @@ public class WordleService {
                 .status(WordleMatchStatus.OPEN)
                 .resultSummary("Waiting for an opponent.")
                 .build());
+
+        chargeEntry(creator, betAmount, feeAmount, match);
 
         wordleMatchPlayerRepository.save(WordleMatchPlayer.builder()
                 .match(match)
@@ -127,7 +130,6 @@ public class WordleService {
         }
 
         validateCanFundEntry(opponent, match.getBetAmount(), match.getFeeAmountPerPlayer());
-        chargeEntry(opponent, match.getBetAmount(), match.getFeeAmountPerPlayer());
 
         LocalDateTime now = LocalDateTime.now();
         match.setOpponent(opponent);
@@ -136,6 +138,8 @@ public class WordleService {
         match.setStartedAt(now);
         match.setResultSummary("Match live. Both players are racing the same word.");
         wordleMatchRepository.save(match);
+
+        chargeEntry(opponent, match.getBetAmount(), match.getFeeAmountPerPlayer(), match);
 
         wordleMatchPlayerRepository.save(WordleMatchPlayer.builder()
                 .match(match)
@@ -305,13 +309,20 @@ public class WordleService {
         }
     }
 
-    private void chargeEntry(User user, BigDecimal betAmount, BigDecimal feeAmount) {
+    private void chargeEntry(User user, BigDecimal betAmount, BigDecimal feeAmount, WordleMatch match) {
         Charity charity = user.getSelectedCharity();
         BigDecimal total = normalizeMoney(betAmount.add(feeAmount));
         user.setBalance(normalizeMoney(user.getBalance().subtract(total)));
         charity.setTotalDonationsReceived(normalizeMoney(charity.getTotalDonationsReceived().add(feeAmount)));
         userRepository.save(user);
         charityRepository.save(charity);
+        charityDonationRepository.save(CharityDonation.builder()
+                .user(user)
+                .charity(charity)
+                .wordleMatch(match)
+                .amount(feeAmount)
+                .createdAt(LocalDateTime.now())
+                .build());
     }
 
     private WordleMatch getRequiredMatch(Long matchId) {

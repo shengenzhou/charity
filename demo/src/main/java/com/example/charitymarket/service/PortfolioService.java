@@ -112,7 +112,7 @@ public class PortfolioService {
                 .id(donation.getId())
                 .charityName(donation.getCharity().getName())
                 .amount(donation.getAmount())
-                .tradeId(donation.getTrade().getId())
+                .tradeId(donation.getTrade() != null ? donation.getTrade().getId() : null)
                 .createdAt(donation.getCreatedAt())
                 .build();
     }
