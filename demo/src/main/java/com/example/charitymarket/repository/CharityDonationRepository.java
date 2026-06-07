@@ -6,12 +6,20 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface CharityDonationRepository extends JpaRepository<CharityDonation, Long> {
 
     List<CharityDonation> findByUserIdOrderByCreatedAtDesc(Long userId);
 
     List<CharityDonation> findAllByWordleMatchId(Long wordleMatchId);
+
+    @Query("""
+            select coalesce(sum(d.amount), 0)
+            from CharityDonation d
+            where d.charity.id = :charityId
+            """)
+    BigDecimal sumAmountByCharityId(@Param("charityId") Long charityId);
 
     @Query("""
             select coalesce(sum(d.amount), 0)

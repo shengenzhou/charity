@@ -21,9 +21,7 @@ import org.springframework.context.annotation.Configuration;
 public class DataSeeder {
 
     private static final int DEFAULT_EXPIRY_TIMESTAMP = 4;
-    private static final BigDecimal RED_CROSS_DONATIONS = new BigDecimal("125122.57");
-    private static final BigDecimal WWF_DONATIONS = new BigDecimal("98231.32");
-    private static final BigDecimal DOCTORS_WITHOUT_BORDERS_DONATIONS = new BigDecimal("143531.03");
+    private static final BigDecimal INITIAL_DONATIONS = new BigDecimal("0.00");
 
     @Bean
     CommandLineRunner seedDemoData(
@@ -41,17 +39,17 @@ public class DataSeeder {
             Charity redCross = Charity.builder()
                     .name("Red Cross")
                     .description("Provides emergency assistance, disaster relief, and humanitarian aid.")
-                    .totalDonationsReceived(RED_CROSS_DONATIONS)
+                    .totalDonationsReceived(INITIAL_DONATIONS)
                     .build();
             Charity wwf = Charity.builder()
                     .name("WWF")
                     .description("Works to conserve nature and reduce the most pressing threats to biodiversity.")
-                    .totalDonationsReceived(WWF_DONATIONS)
+                    .totalDonationsReceived(INITIAL_DONATIONS)
                     .build();
             Charity doctorsWithoutBorders = Charity.builder()
                     .name("Doctors Without Borders")
                     .description("Delivers medical humanitarian aid where it is needed most.")
-                    .totalDonationsReceived(DOCTORS_WITHOUT_BORDERS_DONATIONS)
+                    .totalDonationsReceived(INITIAL_DONATIONS)
                     .build();
 
             charityRepository.saveAll(List.of(redCross, wwf, doctorsWithoutBorders));
