@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.auth")
 public class HackathonAuthProperties {
 
-    private AuthMode mode = AuthMode.DEMO;
+    private AuthMode mode = AuthMode.INVITE;
     private String aliceEmail = "alice@example.com";
     private String bobEmail = "bob@example.com";
     private String aliceToken;
