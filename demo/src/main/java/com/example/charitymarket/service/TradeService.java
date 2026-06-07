@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 public class TradeService {
 
     private static final BigDecimal FEE_RATE = new BigDecimal("0.01");
+    private static final BigDecimal BUY_GROSS_DIVISOR = BigDecimal.ONE.add(FEE_RATE);
     private static final BigDecimal ZERO = new BigDecimal("0.00");
 
     private final UserRepository userRepository;
@@ -56,14 +57,11 @@ public class TradeService {
             throw new BadRequestException("User has no selected charity");
         }
 
-        BigDecimal quantity = normalizeMoney(request.getQuantity());
-        if (quantity.compareTo(ZERO) <= 0) {
-            throw new BadRequestException("Quantity is invalid");
-        }
-
         BigDecimal price = getCurrentPrice(market, request.getOutcome());
-        BigDecimal tradeValue = calculateTradeValue(quantity, price);
-        BigDecimal fee = calculateFee(tradeValue);
+        TradeInputs tradeInputs = resolveTradeInputs(request, price);
+        BigDecimal quantity = tradeInputs.quantity();
+        BigDecimal tradeValue = tradeInputs.tradeValue();
+        BigDecimal fee = tradeInputs.fee();
 
         Position position = positionRepository
                 .findByUserIdAndMarketIdAndOutcome(user.getId(), market.getId(), request.getOutcome())
@@ -171,6 +169,40 @@ public class TradeService {
         return outcome == Outcome.YES ? market.getYesPrice() : market.getNoPrice();
     }
 
+    private TradeInputs resolveTradeInputs(TradeRequest request, BigDecimal price) {
+        if (request.getSide() == TradeSide.BUY && request.getTotalAmount() != null) {
+            BigDecimal totalAmount = normalizeMoney(request.getTotalAmount());
+            if (totalAmount.compareTo(ZERO) <= 0) {
+                throw new BadRequestException("Total spend is invalid");
+            }
+
+            BigDecimal budgetBeforeFee = totalAmount.divide(BUY_GROSS_DIVISOR, 2, RoundingMode.DOWN);
+            BigDecimal quantity = budgetBeforeFee.divide(price, 2, RoundingMode.DOWN);
+            if (quantity.compareTo(ZERO) <= 0) {
+                throw new BadRequestException("Total spend is too low for this market price");
+            }
+
+            BigDecimal tradeValue = calculateTradeValue(quantity, price);
+            BigDecimal fee = calculateFee(tradeValue);
+            return new TradeInputs(quantity, tradeValue, fee);
+        }
+
+        if (request.getQuantity() == null) {
+            throw new BadRequestException(request.getSide() == TradeSide.BUY
+                    ? "Enter a total spend or quantity"
+                    : "Quantity is required");
+        }
+
+        BigDecimal quantity = normalizeMoney(request.getQuantity());
+        if (quantity.compareTo(ZERO) <= 0) {
+            throw new BadRequestException("Quantity is invalid");
+        }
+
+        BigDecimal tradeValue = calculateTradeValue(quantity, price);
+        BigDecimal fee = calculateFee(tradeValue);
+        return new TradeInputs(quantity, tradeValue, fee);
+    }
+
     private BigDecimal calculateFee(BigDecimal tradeValue) {
         return tradeValue.multiply(FEE_RATE).setScale(2, RoundingMode.HALF_UP);
     }
@@ -203,5 +235,8 @@ public class TradeService {
                 .charityName(trade.getCharity().getName())
                 .createdAt(trade.getCreatedAt())
                 .build();
+    }
+
+    private record TradeInputs(BigDecimal quantity, BigDecimal tradeValue, BigDecimal fee) {
     }
 }

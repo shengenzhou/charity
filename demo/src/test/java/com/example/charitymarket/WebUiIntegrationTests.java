@@ -57,7 +57,7 @@ class WebUiIntegrationTests {
                         .param("marketId", "1")
                         .param("outcome", "YES")
                         .param("side", "BUY")
-                        .param("quantity", "3"))
+                        .param("totalAmount", "10.00"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/portfolio"));
 

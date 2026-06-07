@@ -83,12 +83,14 @@ public class WebTradeController {
             Market market,
             TradeRequest tradeRequest,
             String errorMessage) {
+        boolean buySide = tradeRequest.getSide() == TradeSide.BUY;
         model.addAttribute("tradeRequest", tradeRequest);
         model.addAttribute("market", market);
         model.addAttribute("users", userRepository.findAll());
         model.addAttribute("currentUser", currentUserService.getCurrentUser(session));
         model.addAttribute("selectedOutcome", tradeRequest.getOutcome());
         model.addAttribute("selectedSide", tradeRequest.getSide());
+        model.addAttribute("buySide", buySide);
         model.addAttribute(
                 "currentPrice",
                 tradeRequest.getOutcome() == Outcome.YES ? market.getYesPrice() : market.getNoPrice());

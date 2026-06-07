@@ -28,7 +28,9 @@ public class TradeRequest {
     @NotNull
     private TradeSide side;
 
-    @NotNull
     @DecimalMin(value = "0.01")
     private BigDecimal quantity;
+
+    @DecimalMin(value = "0.01")
+    private BigDecimal totalAmount;
 }
