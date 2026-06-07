@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TradeService {
 
-    private static final BigDecimal FEE_RATE = new BigDecimal("0.02");
+    private static final BigDecimal FEE_RATE = new BigDecimal("0.01");
     private static final BigDecimal ZERO = new BigDecimal("0.00");
 
     private final UserRepository userRepository;

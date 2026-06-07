@@ -17,7 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.auth.mode=DEMO")
 @AutoConfigureMockMvc
 class TradingIntegrationTests {
 
@@ -42,13 +42,13 @@ class TradingIntegrationTests {
                         .content(objectMapper.writeValueAsString(buyRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tradeValue").value(4.20))
-                .andExpect(jsonPath("$.fee").value(0.08))
+                .andExpect(jsonPath("$.fee").value(0.04))
                 .andExpect(jsonPath("$.charityName").value("Red Cross"));
 
         mockMvc.perform(get("/api/users/1/portfolio"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.balance").value(995.72))
-                .andExpect(jsonPath("$.totalDonated").value(0.08))
+                .andExpect(jsonPath("$.balance").value(995.76))
+                .andExpect(jsonPath("$.totalDonated").value(0.04))
                 .andExpect(jsonPath("$.positions[0].quantity").value(10.00))
                 .andExpect(jsonPath("$.positions[0].averageEntryPrice").value(0.42))
                 .andExpect(jsonPath("$.positions[0].unrealizedPnl").value(0.00));
@@ -66,19 +66,19 @@ class TradingIntegrationTests {
                         .content(objectMapper.writeValueAsString(sellRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tradeValue").value(2.10))
-                .andExpect(jsonPath("$.fee").value(0.04));
+                .andExpect(jsonPath("$.fee").value(0.02));
 
         mockMvc.perform(get("/api/users/1/portfolio"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.balance").value(997.78))
+                .andExpect(jsonPath("$.balance").value(997.84))
                 .andExpect(jsonPath("$.totalRealizedPnl").value(0.00))
-                .andExpect(jsonPath("$.totalDonated").value(0.12))
+                .andExpect(jsonPath("$.totalDonated").value(0.06))
                 .andExpect(jsonPath("$.positions[0].quantity").value(5.00));
 
         mockMvc.perform(get("/api/users/1/donations"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].amount").value(0.04))
-                .andExpect(jsonPath("$[1].amount").value(0.08));
+                .andExpect(jsonPath("$[0].amount").value(0.02))
+                .andExpect(jsonPath("$[1].amount").value(0.04));
     }
 }

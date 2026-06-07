@@ -21,7 +21,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.auth.mode=DEMO")
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class WebUiIntegrationTests {
@@ -42,7 +42,8 @@ class WebUiIntegrationTests {
         mockMvc.perform(get("/markets"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Markets")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Will it rain in Amsterdam tomorrow?")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "Will the malaria incidence rate in Region X decrease by at least 15% by December 2028?")));
     }
 
     @Test
