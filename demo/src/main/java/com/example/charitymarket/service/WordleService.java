@@ -76,6 +76,36 @@ public class WordleService {
     }
 
     @Transactional
+    public void cancelOpenMatch(Long currentUserId, Long matchId) {
+        WordleMatch match = getRequiredMatch(matchId);
+        if (match.getStatus() != WordleMatchStatus.OPEN) {
+            throw new BadRequestException("Only waiting duels can be cancelled.");
+        }
+        if (!match.getCreator().getId().equals(currentUserId)) {
+            throw new BadRequestException("Only the duel creator can cancel it.");
+        }
+        if (match.getOpponent() != null) {
+            throw new BadRequestException("This duel already has an opponent.");
+        }
+
+        List<CharityDonation> donations = charityDonationRepository.findAllByWordleMatchId(matchId);
+        for (CharityDonation donation : donations) {
+            User user = donation.getUser();
+            Charity charity = donation.getCharity();
+
+            user.setBalance(normalizeMoney(user.getBalance().add(match.getBetAmount()).add(donation.getAmount())));
+            charity.setTotalDonationsReceived(normalizeMoney(charity.getTotalDonationsReceived().subtract(donation.getAmount())));
+            userRepository.save(user);
+            charityRepository.save(charity);
+        }
+
+        charityDonationRepository.deleteAll(donations);
+        wordleGuessRepository.deleteAllByMatchId(matchId);
+        wordleMatchPlayerRepository.deleteAllByMatchId(matchId);
+        wordleMatchRepository.delete(match);
+    }
+
+    @Transactional
     public MatchResponse createMatch(Long currentUserId, CreateMatchRequest request) {
         if (request.getGameType() != GameType.WORDLE) {
             throw new BadRequestException("That game is not live yet. Wordle is the current playable duel.");
@@ -413,6 +443,9 @@ public class WordleService {
                 .winnerName(match.getWinner() != null ? match.getWinner().getName() : null)
                 .currentUserCanJoin(match.getStatus() == WordleMatchStatus.OPEN
                         && !match.getCreator().getId().equals(currentUserId))
+                .currentUserCanCancel(match.getStatus() == WordleMatchStatus.OPEN
+                        && match.getCreator().getId().equals(currentUserId)
+                        && match.getOpponent() == null)
                 .currentUserCanGuess(currentPlayer != null
                         && match.getStatus() == WordleMatchStatus.IN_PROGRESS
                         && !currentPlayer.isFinished())

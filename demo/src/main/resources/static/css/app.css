@@ -806,6 +806,34 @@ button:disabled {
     padding: 1.4rem;
 }
 
+.game-card {
+    border: 1px solid rgba(30, 40, 82, 0.16);
+    border-radius: var(--radius-lg);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 248, 252, 0.98));
+    box-shadow: 0 18px 44px rgba(30, 40, 82, 0.08);
+}
+
+.game-card:hover {
+    border-color: rgba(30, 40, 82, 0.26);
+    box-shadow: 0 22px 52px rgba(30, 40, 82, 0.12);
+}
+
+.game-card .market-top {
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid rgba(30, 40, 82, 0.08);
+}
+
+.game-card .game-stat-row {
+    margin: 1rem 0 0.85rem;
+}
+
+.game-card .price-actions {
+    margin-top: 0.9rem;
+    padding-top: 0.95rem;
+    border-top: 1px solid rgba(30, 40, 82, 0.08);
+}
+
 .game-stat-row,
 .status-stack {
     display: grid;
@@ -1072,10 +1100,12 @@ button:disabled {
 
     .board-row {
         grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
     .simulation-overlay {
         left: 12px;
         right: 12px;
-        bottom: 12px;SS
+        bottom: 12px;
         width: auto;
     }
 }

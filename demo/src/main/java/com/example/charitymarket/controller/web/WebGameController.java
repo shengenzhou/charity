@@ -106,6 +106,20 @@ public class WebGameController {
         }
     }
 
+    @PostMapping("/games/{matchId}/cancel")
+    public String cancelMatch(
+            @PathVariable Long matchId,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        try {
+            wordleService.cancelOpenMatch(currentUserService.getCurrentUserId(session), matchId);
+            redirectAttributes.addFlashAttribute("successMessage", "Pending duel cancelled. Your balance was restored.");
+        } catch (RuntimeException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/games";
+    }
+
     @PostMapping("/games/{matchId}/guess")
     public String submitGuess(
             @PathVariable Long matchId,

@@ -23,6 +23,7 @@ public class MatchResponse {
     private String resultSummary;
     private String winnerName;
     private boolean currentUserCanJoin;
+    private boolean currentUserCanCancel;
     private boolean currentUserCanGuess;
     private boolean revealOpponentGuesses;
     private PlayerView currentPlayer;
