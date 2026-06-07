@@ -10,4 +10,6 @@ public interface WordleMatchPlayerRepository extends JpaRepository<WordleMatchPl
     List<WordleMatchPlayer> findAllByMatchIdOrderByIdAsc(Long matchId);
 
     Optional<WordleMatchPlayer> findByMatchIdAndUserId(Long matchId, Long userId);
+
+    void deleteAllByMatchId(Long matchId);
 }

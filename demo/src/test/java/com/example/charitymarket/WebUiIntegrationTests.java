@@ -176,4 +176,34 @@ class WebUiIntegrationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalDonated").value(0.25));
     }
+
+    @Test
+    void creatorCanCancelWaitingMatchAndRestoreBalance() throws Exception {
+        BigDecimal startingBalance = userRepository.findById(1L).orElseThrow().getBalance();
+
+        MvcResult sessionResult = mockMvc.perform(get("/games"))
+                .andExpect(status().isOk())
+                .andReturn();
+        MockHttpSession session = (MockHttpSession) sessionResult.getRequest().getSession(false);
+
+        mockMvc.perform(post("/games")
+                        .session(session)
+                        .param("gameType", "WORDLE")
+                        .param("betAmount", "25.00"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/games"));
+
+        WordleMatch createdMatch = wordleMatchRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow();
+
+        mockMvc.perform(post("/games/" + createdMatch.getId() + "/cancel")
+                        .session(session))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/games"));
+
+        org.assertj.core.api.Assertions.assertThat(wordleMatchRepository.findById(createdMatch.getId())).isEmpty();
+        org.assertj.core.api.Assertions.assertThat(userRepository.findById(1L).orElseThrow().getBalance())
+                .isEqualByComparingTo(startingBalance);
+    }
 }

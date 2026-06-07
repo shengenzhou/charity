@@ -51,23 +51,7 @@ public class DataSeeder {
 
             charityRepository.saveAll(List.of(redCross, wwf, doctorsWithoutBorders));
 
-            if (authProperties.getMode() == AuthMode.INVITE) {
-                userRepository.saveAll(List.of(
-                        User.builder()
-                                .name(null)
-                                .email(authProperties.getAliceEmail())
-                                .balance(new BigDecimal("1000.00"))
-                                .usernameConfigured(false)
-                                .selectedCharity(redCross)
-                                .build(),
-                        User.builder()
-                                .name(null)
-                                .email(authProperties.getBobEmail())
-                                .balance(new BigDecimal("1000.00"))
-                                .usernameConfigured(false)
-                                .selectedCharity(wwf)
-                                .build()));
-            } else {
+            if (authProperties.getMode() != AuthMode.INVITE) {
                 userRepository.saveAll(List.of(
                         User.builder()
                                 .name("Alice")

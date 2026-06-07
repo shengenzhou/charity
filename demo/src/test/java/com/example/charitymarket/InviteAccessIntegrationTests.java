@@ -11,11 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest(properties = "app.auth.mode=INVITE")
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class InviteAccessIntegrationTests {
 
     @Autowired
@@ -40,5 +42,26 @@ class InviteAccessIntegrationTests {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Roni")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Log out")))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Switch"))));
+    }
+
+    @Test
+    void inviteModeAllowsUpToOneHundredPlayers() throws Exception {
+        for (int index = 1; index <= 100; index++) {
+            mockMvc.perform(post("/access")
+                            .session(new MockHttpSession())
+                            .param("username", "Player" + index))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/markets"));
+        }
+
+        mockMvc.perform(post("/access")
+                        .session(new MockHttpSession())
+                        .param("username", "Player101"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/access"));
+
+        mockMvc.perform(get("/access").session(new MockHttpSession()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Welcome")));
     }
 }

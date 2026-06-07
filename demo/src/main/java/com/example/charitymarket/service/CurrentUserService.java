@@ -4,9 +4,12 @@ import com.example.charitymarket.config.AuthMode;
 import com.example.charitymarket.config.HackathonAuthProperties;
 import com.example.charitymarket.exception.BadRequestException;
 import com.example.charitymarket.exception.NotFoundException;
+import com.example.charitymarket.model.Charity;
 import com.example.charitymarket.model.User;
+import com.example.charitymarket.repository.CharityRepository;
 import com.example.charitymarket.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +20,11 @@ import org.springframework.stereotype.Service;
 public class CurrentUserService {
 
     private static final String CURRENT_USER_ID = "currentUserId";
+    private static final int MAX_PLAYERS = 100;
+    private static final BigDecimal STARTING_BALANCE = new BigDecimal("1000.00");
 
     private final UserRepository userRepository;
+    private final CharityRepository charityRepository;
     private final HackathonAuthProperties authProperties;
 
     public User getCurrentUser(HttpSession session) {
@@ -76,10 +82,11 @@ public class CurrentUserService {
             return;
         }
 
-        User availableUser = userRepository.findAll().stream()
+        List<User> allUsers = userRepository.findAll();
+        User availableUser = allUsers.stream()
                 .filter(user -> !user.isUsernameConfigured())
                 .findFirst()
-                .orElseThrow(() -> new BadRequestException("Both player slots are already taken."));
+                .orElseGet(() -> createNewInviteUser(allUsers.size()));
 
         availableUser.setName(normalizedUsername);
         availableUser.setUsernameConfigured(true);
@@ -100,5 +107,21 @@ public class CurrentUserService {
             throw new BadRequestException("Username can only contain letters, numbers, spaces, - and _.");
         }
         return normalizedUsername;
+    }
+
+    private User createNewInviteUser(int existingUserCount) {
+        if (existingUserCount >= MAX_PLAYERS) {
+            throw new BadRequestException("The player limit has been reached.");
+        }
+
+        Charity defaultCharity = charityRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("No charities are available yet."));
+
+        return User.builder()
+                .balance(STARTING_BALANCE)
+                .selectedCharity(defaultCharity)
+                .usernameConfigured(false)
+                .build();
     }
 }

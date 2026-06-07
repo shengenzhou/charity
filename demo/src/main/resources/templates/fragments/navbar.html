@@ -5,6 +5,11 @@
     <div class="top-ribbon">
         <strong th:text="${currentUser.selectedCharity != null ? currentUser.selectedCharity.name : 'Choose a charity'}">Red Cross</strong>
         receives every platform fee you generate.
+        <span>
+            Today:
+            <strong th:text="${#numbers.formatDecimal(todayCharityDonations, 1, 2)}">0.00</strong>
+            has gone to charity.
+        </span>
     </div>
     <div class="app-nav-wrap">
         <nav class="app-nav">
