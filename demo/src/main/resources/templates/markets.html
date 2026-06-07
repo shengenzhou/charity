@@ -64,18 +64,21 @@
                     <p class="section-copy">Dynamic pricing and market status are live. Trend and volume chips are visual placeholders from the Figma plan.</p>
                 </div>
                 <div class="filter-pills">
-                    <!-- Links update the URL, causing the Controller to re-render the page -->
+                    <!-- Grid View -->
                     <a th:href="@{/markets(view='grid')}" class="pill" 
-                    th:classappend="${view == 'grid' || view == null} ? ' active'">All markets</a>
+                    th:classappend="${view == 'grid' || view == null} ? ' active'">All Charity</a>
                     
-                    <a th:href="@{/markets(view='graph')}" 
-                    class="pill" 
+                    <!-- Sport View -->
+                    <a th:href="@{/markets(view='sport')}" class="pill" 
+                    th:classappend="${view == 'sport'} ? ' active'">Sport</a>
+                    
+                    <!-- Graph/Trending View -->
+                    <a th:href="@{/markets(view='graph')}" class="pill" 
                     th:classappend="${view == 'graph'} ? ' active'">Trending</a>
-
                 </div>
             </div>
 
-            <div id="grid-view" th:if="${view == 'grid'}" class="market-grid">
+            <div id="grid-view" th:if="${view == 'grid' || view == 'sport'}" class="market-grid">
                 <article class="market-card" th:each="market, iter : ${markets}">
                     <div class="market-top">
                         <div class="market-chips">
