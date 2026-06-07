@@ -107,7 +107,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="position : ${portfolio.positions}">
-                        <td th:text="${position.marketQuestion}">Will it rain?</td>
+                        <td th:text="${position.marketQuestion}">Market question</td>
                         <td th:text="${position.outcome}">YES</td>
                         <td class="mono" th:text="${position.quantity}">10</td>
                         <td class="mono" th:text="${position.averageEntryPrice}">0.42</td>
@@ -162,7 +162,7 @@
                 </thead>
                 <tbody>
                 <tr th:each="position : ${settledPositions}">
-                    <td th:text="${position.marketQuestion}">Will it rain?</td>
+                    <td th:text="${position.marketQuestion}">Market question</td>
                     <td th:text="${position.outcome}">YES</td>
                     <td class="mono" th:text="${position.quantity}">0.00</td>
                     <td class="mono" th:text="${position.averageEntryPrice}">0.42</td>
@@ -203,7 +203,7 @@
                 <tbody>
                 <tr th:each="trade : ${trades}">
                     <td th:text="${trade.createdAt}">2026-06-06T12:00</td>
-                    <td th:text="${trade.market.question}">Will it rain?</td>
+                    <td th:text="${trade.market.question}">Market question</td>
                     <td th:text="${trade.side}">BUY</td>
                     <td th:text="${trade.outcome}">YES</td>
                     <td class="mono" th:text="${trade.quantity}">10</td>
