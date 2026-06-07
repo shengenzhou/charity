@@ -1,5 +1,7 @@
 package com.example.charitymarket.service;
 
+import com.example.charitymarket.config.AuthMode;
+import com.example.charitymarket.config.HackathonAuthProperties;
 import com.example.charitymarket.dto.SimulationState;
 import com.example.charitymarket.exception.BadRequestException;
 import com.example.charitymarket.model.Charity;
@@ -40,10 +42,18 @@ public class SimulationService {
     private static final BigDecimal MIN_PRICE = new BigDecimal("0.05");
     private static final BigDecimal MAX_PRICE = new BigDecimal("0.95");
     private static final BigDecimal DEFAULT_BALANCE = new BigDecimal("1000.00");
+    private static final Map<String, BigDecimal> DEFAULT_CHARITY_TOTALS = Map.of(
+            "Red Cross", new BigDecimal("125000.00"),
+            "WWF", new BigDecimal("98000.00"),
+            "Doctors Without Borders", new BigDecimal("143500.00"));
     private static final Map<String, String> DEFAULT_USER_CHARITIES = Map.of(
             "Alice", "Red Cross",
             "Bob", "WWF",
             "Charlie", "Doctors Without Borders");
+    private static final Map<String, String> DEFAULT_USER_EMAILS = Map.of(
+            "Alice", "alice@example.com",
+            "Bob", "bob@example.com",
+            "Charlie", "charlie@example.com");
 
     private final MarketRepository marketRepository;
     private final MarketPriceSnapshotRepository marketPriceSnapshotRepository;
@@ -53,6 +63,7 @@ public class SimulationService {
     private final CharityDonationRepository charityDonationRepository;
     private final UserRepository userRepository;
     private final CharityRepository charityRepository;
+    private final HackathonAuthProperties authProperties;
 
     public void initializeSimulation() {
         getOrCreateSimulationStateEntity();
@@ -188,12 +199,16 @@ public class SimulationService {
 
         List<Charity> charities = charityRepository.findAll();
         for (Charity charity : charities) {
-            charity.setTotalDonationsReceived(ZERO);
+            charity.setTotalDonationsReceived(DEFAULT_CHARITY_TOTALS.getOrDefault(charity.getName(), ZERO));
         }
         charityRepository.saveAll(charities);
 
         Map<String, Charity> charityByName = charities.stream()
                 .collect(java.util.stream.Collectors.toMap(Charity::getName, charity -> charity));
+
+        if (authProperties.getMode() == AuthMode.DEMO) {
+            ensureDefaultDemoUsers(charityByName);
+        }
 
         List<User> users = userRepository.findAll();
         for (User user : users) {
@@ -228,6 +243,28 @@ public class SimulationService {
         com.example.charitymarket.model.SimulationState state = getOrCreateSimulationStateEntity();
         state.setCurrentTimestamp(MIN_TIMESTAMP);
         simulationStateRepository.save(state);
+    }
+
+    private void ensureDefaultDemoUsers(Map<String, Charity> charityByName) {
+        List<User> existingUsers = userRepository.findAll();
+        Map<String, User> usersByName = existingUsers.stream()
+                .filter(user -> user.getName() != null)
+                .collect(java.util.stream.Collectors.toMap(User::getName, user -> user, (left, right) -> left));
+
+        for (Map.Entry<String, String> entry : DEFAULT_USER_CHARITIES.entrySet()) {
+            String userName = entry.getKey();
+            if (usersByName.containsKey(userName)) {
+                continue;
+            }
+
+            userRepository.save(User.builder()
+                    .name(userName)
+                    .email(DEFAULT_USER_EMAILS.get(userName))
+                    .balance(DEFAULT_BALANCE)
+                    .usernameConfigured(true)
+                    .selectedCharity(charityByName.get(entry.getValue()))
+                    .build());
+        }
     }
 
     private void validateTimestamp(Integer timestampIndex) {

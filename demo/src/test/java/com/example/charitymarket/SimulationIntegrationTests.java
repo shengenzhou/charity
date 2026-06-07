@@ -30,7 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.auth.mode=DEMO")
 @AutoConfigureMockMvc
 class SimulationIntegrationTests {
 
@@ -142,11 +142,11 @@ class SimulationIntegrationTests {
         org.assertj.core.api.Assertions.assertThat(bobPosition.getQuantity()).isEqualByComparingTo("0.00");
 
         BigDecimal aliceExpectedBalance = resolvedOutcome == Outcome.YES
-                ? new BigDecimal("1005.72")
-                : new BigDecimal("995.72");
+                ? new BigDecimal("1005.76")
+                : new BigDecimal("995.76");
         BigDecimal bobExpectedBalance = resolvedOutcome == Outcome.NO
-                ? new BigDecimal("1004.08")
-                : new BigDecimal("994.08");
+                ? new BigDecimal("1004.14")
+                : new BigDecimal("994.14");
         org.assertj.core.api.Assertions.assertThat(userRepository.findById(1L).orElseThrow().getBalance())
                 .isEqualByComparingTo(aliceExpectedBalance);
         org.assertj.core.api.Assertions.assertThat(userRepository.findById(2L).orElseThrow().getBalance())
