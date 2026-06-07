@@ -61,7 +61,7 @@
             <div class="section-head">
                 <div>
                     <h2 class="section-title">Featured markets</h2>
-                    <p class="section-copy">Dynamic pricing and market status are live. Trend and volume chips are visual placeholders from the Figma plan.</p>
+                    <p class="section-copy">Dynamic pricing and market status update live as the simulation moves forward.</p>
                 </div>
                 <div class="filter-pills">
                     <!-- Grid View -->
@@ -90,7 +90,7 @@
                               th:text="${market.status}">OPEN</span>
                     </div>
 
-                    <h3 class="market-question" th:text="${market.question}">Will it rain?</h3>
+                    <h3 class="market-question" th:text="${market.question}">Market question</h3>
 
                     <div class="market-bottom">
                         <div class="tiny" th:text="'Time to expiry: T-' + ${market.expiryTimestamp - market.currentTimestamp}">Time to expiry: T-4</div>

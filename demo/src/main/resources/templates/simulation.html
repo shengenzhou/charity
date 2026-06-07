@@ -76,7 +76,7 @@
                 </thead>
                 <tbody>
                 <tr th:each="view : ${marketSimulationViews}">
-                    <td th:text="${view.market.question}">Will it rain?</td>
+                    <td th:text="${view.market.question}">Market question</td>
                     <td th:text="${view.market.status}">OPEN</td>
                     <td th:text="${view.market.resolvedOutcome != null ? view.market.resolvedOutcome : 'Pending'}">Pending</td>
                     <td class="mono" th:each="snapshot : ${view.snapshots}" th:text="${snapshot.yesPrice}">0.42</td>
