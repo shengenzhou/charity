@@ -1,7 +1,13 @@
 package com.example.charitymarket.config;
 
-import com.example.charitymarket.config.AuthMode;
-import com.example.charitymarket.config.HackathonAuthProperties;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.example.charitymarket.model.Charity;
 import com.example.charitymarket.model.Market;
 import com.example.charitymarket.model.MarketStatus;
@@ -10,12 +16,6 @@ import com.example.charitymarket.repository.CharityRepository;
 import com.example.charitymarket.repository.MarketRepository;
 import com.example.charitymarket.repository.UserRepository;
 import com.example.charitymarket.service.SimulationService;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DataSeeder {
@@ -104,7 +104,12 @@ public class DataSeeder {
                     market("Will NGO Z keep administrative expenses below 15% of total spending in 2027?", "0.47", 20),
                     market("Will Region X experience famine conditions before June 2028?", "0.28", 21),
                     market("Will refugee displacement in Region Y exceed 100,000 people by the end of 2027?", "0.59", 22),
-                    market("Will Disease Outbreak Z exceed 50,000 reported cases before December 2027?", "0.33", 23)));
+                    market("Will Disease Outbreak Z exceed 50,000 reported cases before December 2027?", "0.33", 23),
+                market("Sport - Will Team A win the final match of the 2027 Basketball Tournament?", "0.55", 24),
+        market("Sport - Will the local Tennis Championship match set a new attendance record?", "0.45", 25),
+        market("Sport - Will Athlete X win gold in their sport at the 2028 Summer Games?", "0.60", 26),
+        market("Sport - Will the Football League Championship match be sold out by December 2027?", "0.70", 27)
+));
 
             simulationService.initializeSimulation();
         };
