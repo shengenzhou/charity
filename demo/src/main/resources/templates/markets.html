@@ -3,6 +3,7 @@
 <head>
     <title>Markets</title>
     <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div class="page-shell">
@@ -63,13 +64,18 @@
                     <p class="section-copy">Dynamic pricing and market status are live. Trend and volume chips are visual placeholders from the Figma plan.</p>
                 </div>
                 <div class="filter-pills">
-                    <span class="pill active">All markets</span>
-                    <span class="pill">Trending</span>
-                    <span class="pill">Closing soon</span>
+                    <!-- Links update the URL, causing the Controller to re-render the page -->
+                    <a th:href="@{/markets(view='grid')}" class="pill" 
+                    th:classappend="${view == 'grid' || view == null} ? ' active'">All markets</a>
+                    
+                    <a th:href="@{/markets(view='graph')}" 
+                    class="pill" 
+                    th:classappend="${view == 'graph'} ? ' active'">Trending</a>
+
                 </div>
             </div>
 
-            <div class="market-grid">
+            <div id="grid-view" th:if="${view == 'grid'}" class="market-grid">
                 <article class="market-card" th:each="market, iter : ${markets}">
                     <div class="market-top">
                         <div class="market-chips">
@@ -111,8 +117,104 @@
                     </div>
                 </article>
             </div>
+            <div th:if="${view == 'graph'}" class="market-grid">
+                <article class="market-card" th:each="view : ${marketSimulationViews}">
+                    <div class="market-top">
+                        <div class="market-chips">
+                            <span class="market-chip">Market #[[${view.market.id}]]</span>
+                        </div>
+                        <span class="market-status"
+                            th:classappend="${#strings.toLowerCase(view.market.status.name())}"
+                            th:text="${view.market.status}">OPEN</span>
+                    </div>
+
+                    <h3 class="market-question" th:text="${view.market.question}">Question</h3>
+
+                    <!-- Chart Container -->
+                    <div style="height: 180px; margin-bottom: 1rem;">
+                        <canvas th:id="'chart-' + ${view.market.id}" 
+                                th:data-yes='${view.snapshots.![yesPrice]}' 
+                                th:data-no='${view.snapshots.![noPrice]}'></canvas>
+                    </div>
+
+                    <div class="price-grid">
+                        <div class="price-card yes">
+                            <span class="price-label">Yes price</span>
+                            <strong class="price-number" th:text="${view.market.yesPrice}">0.42</strong>
+                        </div>
+                        <div class="price-card no">
+                            <span class="price-label">No price</span>
+                            <strong class="price-number" th:text="${view.market.noPrice}">0.58</strong>
+                        </div>
+                    </div>
+                </article>
+            </div>
         </section>
     </main>
 </div>
 </body>
 </html>
+<script th:if="${view == 'graph'}" th:inline="javascript">
+    const globalTimestamp = [[${currentTimestamp}]]; 
+
+    document.querySelectorAll('canvas').forEach(canvas => {
+        const yesPrices = JSON.parse(canvas.getAttribute('data-yes'));
+        const noPrices = JSON.parse(canvas.getAttribute('data-no'));
+        const labels = ['T0', 'T1', 'T2', 'T3', 'T4'];
+
+        const visibleLabels = labels.slice(0, globalTimestamp + 1);
+        const visibleYes = yesPrices.slice(0, globalTimestamp + 1);
+        const visibleNo = noPrices.slice(0, globalTimestamp + 1);
+
+        new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: visibleLabels,
+                datasets: [
+                    { 
+                        label: 'Yes', // Renamed to "Yes"
+                        data: visibleYes, 
+                        borderColor: '#059669', // Green
+                        backgroundColor: 'rgba(5, 150, 105, 0.05)',
+                        fill: true, 
+                        tension: 0.3 
+                    },
+                    { 
+                        label: 'No', // Renamed to "No"
+                        data: visibleNo, 
+                        borderColor: '#dc2626', // Red
+                        backgroundColor: 'rgba(220, 38, 38, 0.05)',
+                        fill: true, 
+                        tension: 0.3 
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: true, // Enabled the legend
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true, // Draws circle indicators instead of default boxes
+                            boxWidth: 8,
+                            padding: 15,
+                            font: {
+                                family: "'Inter', sans-serif",
+                                size: 12,
+                                weight: 600
+                            }
+                        }
+                    }
+                },
+                scales: { 
+                    y: { 
+                        min: 0, 
+                        max: 1 
+                    } 
+                }
+            }
+        });
+    });
+</script>
